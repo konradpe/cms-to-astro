@@ -1,0 +1,71 @@
+---
+/**
+ * Scroll effects with motion (vanilla API, no React). Include once in the base layout, then mark
+ * elements in any template:
+ *
+ *   <section data-reveal>…</section>                fade in and up when it scrolls into view
+ *   <section data-reveal="fade">…</section>         fade only
+ *   <ul data-reveal-stagger>…</ul>                  children one after another
+ *   <img data-parallax="0.15" …>                    moves slower than the page (inside a clipped box)
+ *   data-reveal-delay="0.2"                         seconds
+ *
+ * Content stays visible without JavaScript, for visitors who prefer reduced motion, and for
+ * elements already on screen at load (no flash; stable screenshots). Inside a React island use
+ * motion/react instead. Requires: npm i motion
+ */
+---
+
+<script>
+  import { animate } from 'motion/mini';
+  import { inView, scroll, stagger } from 'motion';
+
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ease = [0.22, 1, 0.36, 1] as const;
+  const belowFold = (el: Element) => el.getBoundingClientRect().top > innerHeight * 0.9;
+
+  if (!reduceMotion) {
+    for (const el of document.querySelectorAll<HTMLElement>('[data-reveal]')) {
+      if (!belowFold(el)) continue;
+      const up = el.dataset.reveal !== 'fade';
+      el.style.opacity = '0';
+      if (up) el.style.transform = 'translateY(1.5rem)';
+      const stop = inView(
+        el,
+        () => {
+          animate(el, { opacity: 1, transform: 'none' }, { duration: 0.6, delay: Number(el.dataset.revealDelay) || 0, ease });
+          stop();
+        },
+        { amount: 0.15 },
+      );
+    }
+
+    for (const parent of document.querySelectorAll<HTMLElement>('[data-reveal-stagger]')) {
+      if (!belowFold(parent)) continue;
+      const items = [...parent.children] as HTMLElement[];
+      for (const item of items) {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(1rem)';
+      }
+      const stop = inView(
+        parent,
+        () => {
+          animate(items, { opacity: 1, transform: 'none' }, { duration: 0.5, delay: stagger(0.08), ease });
+          stop();
+        },
+        { amount: 0.1 },
+      );
+    }
+
+    for (const el of document.querySelectorAll<HTMLElement>('[data-parallax]')) {
+      const speed = Number(el.dataset.parallax) || 0.15;
+      const box = el.parentElement ?? el;
+      const shift = () => box.offsetHeight * speed;
+      scroll(
+        (progress: number) => {
+          el.style.transform = `translateY(${(progress - 0.5) * 2 * shift()}px)`;
+        },
+        { target: box, offset: ['start end', 'end start'] },
+      );
+    }
+  }
+</script>

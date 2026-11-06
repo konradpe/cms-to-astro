@@ -33,7 +33,8 @@ List every third party the **new** site would contact, with the reason and when 
 
 | Service | Typical replacement | Loads | Consent needed? (EU, typical view) |
 |---|---|---|---|
-| Fonts | Self-hosted (Fontsource) | never third-party | no |
+| Fonts | Self-hosted (Astro Fonts API, files in the build) | never third-party | no |
+| Icons | Inlined at build time (astro-icon) | never the Iconify API at runtime | no |
 | Hosting/CDN (Cloudflare, Netlify …) | – | always (processes IP addresses as host) | no consent; name it in the privacy policy |
 | Contact form service | Formspree, Web3Forms, Netlify Forms … | only on submit (or on page load if their script is embedded) | no banner; privacy notice near the form |
 | Video | Click-to-load facade | on click | the click with a short notice serves as consent ("Loads YouTube; YouTube's privacy policy applies") |

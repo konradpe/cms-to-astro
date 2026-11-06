@@ -1,0 +1,249 @@
+---
+/**
+ * Carousel on Embla (vanilla, no React). Each direct child of the slot is one slide:
+ *
+ *   <Carousel label="Projects" perView={{ base: 1, md: 2, lg: 3 }} gap="1rem" loop>
+ *     {projects.map((p) => <article>…</article>)}
+ *   </Carousel>
+ *
+ * Without JavaScript it is a horizontally scrollable row with scroll snapping. Autoplay is off by
+ * default; with `autoplay={6000}` it shows a pause button (WCAG 2.2.2), stops on hover, focus and
+ * interaction, and never runs when the visitor prefers reduced motion. Labels follow <html lang>
+ * (en, de built in) unless `labels` is given. Inside a React island use shadcn's `carousel` instead.
+ * Requires: npm i embla-carousel embla-carousel-autoplay, astro-icon with @iconify-json/lucide
+ */
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  /** Accessible name of the carousel, e.g. "Projects" */
+  label: string;
+  /** Slides per view, per breakpoint (Tailwind widths: sm 640, md 768, lg 1024, xl 1280) */
+  perView?: { base?: number; sm?: number; md?: number; lg?: number; xl?: number };
+  gap?: string;
+  loop?: boolean;
+  /** Milliseconds between slides; off when omitted */
+  autoplay?: number;
+  dots?: boolean;
+  class?: string;
+  labels?: Partial<Record<'prev' | 'next' | 'pause' | 'play' | 'slide' | 'goTo', string>>;
+}
+const { label, perView = {}, gap = '1rem', loop = false, autoplay, dots = true, class: className, labels } = Astro.props;
+const bp = { base: 0, sm: 640, md: 768, lg: 1024, xl: 1280 } as const;
+const sizes = Object.entries(perView)
+  .filter(([k]) => k in bp)
+  .map(([k, n]) => [bp[k as keyof typeof bp], 100 / Math.max(1, Number(n))] as const);
+---
+
+<section
+  class:list={['site-carousel', className]}
+  aria-roledescription="carousel"
+  aria-label={label}
+  data-carousel
+  data-loop={loop ? '' : undefined}
+  data-autoplay={autoplay || undefined}
+  data-sizes={JSON.stringify(sizes)}
+  data-labels={labels ? JSON.stringify(labels) : undefined}
+  style={`--slide-gap: ${gap}`}
+>
+  <div class="site-carousel__viewport" data-carousel-viewport>
+    <div class="site-carousel__container" data-carousel-container>
+      <slot />
+    </div>
+  </div>
+  <div class="site-carousel__controls" data-carousel-controls hidden>
+    <button type="button" class="site-carousel__button" data-carousel-prev>
+      <Icon name="lucide:chevron-left" aria-hidden="true" />
+    </button>
+    {dots && <div class="site-carousel__dots" data-carousel-dots />}
+    <button type="button" class="site-carousel__button" data-carousel-next>
+      <Icon name="lucide:chevron-right" aria-hidden="true" />
+    </button>
+    {
+      autoplay && (
+        <button type="button" class="site-carousel__button" data-carousel-toggle>
+          <Icon name="lucide:pause" aria-hidden="true" data-when="playing" />
+          <Icon name="lucide:play" aria-hidden="true" data-when="paused" />
+        </button>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .site-carousel__viewport {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+  [data-carousel-ready] .site-carousel__viewport {
+    overflow: hidden;
+    scroll-snap-type: none;
+  }
+  .site-carousel__container {
+    display: flex;
+    touch-action: pan-y pinch-zoom;
+    margin-left: calc(var(--slide-gap) * -1);
+  }
+  .site-carousel__container > :global(*) {
+    flex: 0 0 var(--slide-size, 100%);
+    min-width: 0;
+    padding-left: var(--slide-gap);
+    scroll-snap-align: start;
+  }
+  .site-carousel__controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .site-carousel__controls[hidden] {
+    display: none;
+  }
+  .site-carousel__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    border: 1px solid currentColor;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+  .site-carousel__button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .site-carousel__button :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  [data-carousel-toggle][data-state='playing'] :global([data-when='paused']),
+  [data-carousel-toggle][data-state='paused'] :global([data-when='playing']) {
+    display: none;
+  }
+  .site-carousel__dots {
+    display: flex;
+    gap: 0.25rem;
+  }
+  .site-carousel__dots :global(button) {
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .site-carousel__dots :global(button)::after {
+    content: '';
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 9999px;
+    background: currentColor;
+    opacity: 0.3;
+  }
+  .site-carousel__dots :global(button[aria-current='true'])::after {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  import EmblaCarousel from 'embla-carousel';
+  import Autoplay from 'embla-carousel-autoplay';
+
+  const STRINGS: Record<string, Record<string, string>> = {
+    en: { prev: 'Previous slide', next: 'Next slide', pause: 'Pause slideshow', play: 'Play slideshow', slide: '{n} of {total}', goTo: 'Go to slide {n}' },
+    de: { prev: 'Vorherige Folie', next: 'Nächste Folie', pause: 'Diashow anhalten', play: 'Diashow abspielen', slide: '{n} von {total}', goTo: 'Zu Folie {n}' },
+  };
+  const lang = document.documentElement.lang.slice(0, 2).toLowerCase();
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fill = (s: string, vars: Record<string, number>) => s.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-carousel]')) {
+    const t = { ...(STRINGS[lang] ?? STRINGS.en), ...JSON.parse(root.dataset.labels ?? '{}') };
+    const viewport = root.querySelector<HTMLElement>('[data-carousel-viewport]')!;
+    const container = root.querySelector<HTMLElement>('[data-carousel-container]')!;
+    const slides = [...container.children] as HTMLElement[];
+    if (slides.length < 2) continue;
+
+    // Slides per view by breakpoint: one CSS variable, also used before JS runs.
+    const sizes: [number, number][] = JSON.parse(root.dataset.sizes ?? '[]');
+    const applySize = () => {
+      const match = sizes.filter(([min]) => innerWidth >= min).pop();
+      root.style.setProperty('--slide-size', `${match ? match[1] : 100}%`);
+    };
+    applySize();
+    addEventListener('resize', applySize);
+
+    slides.forEach((slide, i) => {
+      slide.setAttribute('role', 'group');
+      slide.setAttribute('aria-roledescription', 'slide');
+      slide.setAttribute('aria-label', fill(t.slide, { n: i + 1, total: slides.length }));
+    });
+
+    const delay = Number(root.dataset.autoplay) || 0;
+    const plugins = delay && !reduceMotion
+      ? [Autoplay({ delay, stopOnInteraction: true, stopOnMouseEnter: true, stopOnFocusIn: true })]
+      : [];
+    const embla = EmblaCarousel(viewport, { loop: root.hasAttribute('data-loop'), align: 'start' }, plugins);
+    root.dataset.carouselReady = '';
+    viewport.scrollLeft = 0;
+
+    const controls = root.querySelector<HTMLElement>('[data-carousel-controls]')!;
+    const prev = root.querySelector<HTMLButtonElement>('[data-carousel-prev]')!;
+    const next = root.querySelector<HTMLButtonElement>('[data-carousel-next]')!;
+    const dotsEl = root.querySelector<HTMLElement>('[data-carousel-dots]');
+    const toggle = root.querySelector<HTMLButtonElement>('[data-carousel-toggle]');
+    // Autoplay's stopOnInteraction covers dragging only; a click on a control stops it too.
+    const autoplay = embla.plugins().autoplay;
+    const takeOver = () => autoplay?.stop();
+    prev.setAttribute('aria-label', t.prev);
+    next.setAttribute('aria-label', t.next);
+    prev.addEventListener('click', () => (takeOver(), embla.scrollPrev()));
+    next.addEventListener('click', () => (takeOver(), embla.scrollNext()));
+
+    let dots: HTMLButtonElement[] = [];
+    const buildDots = () => {
+      if (!dotsEl) return;
+      dotsEl.replaceChildren();
+      dots = embla.scrollSnapList().map((_, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('aria-label', fill(t.goTo, { n: i + 1 }));
+        b.addEventListener('click', () => (takeOver(), embla.scrollTo(i)));
+        dotsEl.append(b);
+        return b;
+      });
+    };
+    const update = () => {
+      prev.disabled = !embla.canScrollPrev();
+      next.disabled = !embla.canScrollNext();
+      const sel = embla.selectedScrollSnap();
+      dots.forEach((d, i) => d.setAttribute('aria-current', String(i === sel)));
+      const inView = new Set(embla.slidesInView());
+      slides.forEach((s, i) => s.toggleAttribute('inert', !inView.has(i)));
+      controls.hidden = embla.scrollSnapList().length < 2;
+    };
+
+    if (toggle) {
+      if (!autoplay) toggle.remove();
+      else {
+        // The plugin emits autoplay:play/stop before isPlaying() changes: take the state from the event.
+        const sync = (playing: boolean) => {
+          toggle.dataset.state = playing ? 'playing' : 'paused';
+          toggle.setAttribute('aria-label', playing ? t.pause : t.play);
+        };
+        toggle.addEventListener('click', () => (autoplay.isPlaying() ? autoplay.stop() : autoplay.play()));
+        embla.on('autoplay:play', () => sync(true)).on('autoplay:stop', () => sync(false));
+        sync(autoplay.isPlaying());
+      }
+    }
+
+    buildDots();
+    update();
+    embla.on('select', update).on('slidesInView', update).on('reInit', () => (buildDots(), update()));
+  }
+</script>

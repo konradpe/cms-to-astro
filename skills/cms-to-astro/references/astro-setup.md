@@ -1,6 +1,6 @@
 # Astro project setup
 
-Keep the project boring: Astro, Tailwind, Markdown content, as few dependencies as the site needs. Every dependency is something the owner's agent must keep updated later. Astro changes between major versions; when an example here fails, check the current Astro docs for that feature before working around it.
+Keep the project boring: Astro, Tailwind, Markdown content, the default libraries (libraries.md) and nothing else the site doesn't need. Every dependency is something the owner's agent must keep updated later; the default libraries earn their place by replacing hand-built menus, lightboxes and sliders. Astro changes between major versions; when an example here fails, check the current Astro docs for that feature before working around it.
 
 ## Contents
 1. Scaffold and clean-up
@@ -12,7 +12,7 @@ Keep the project boring: Astro, Tailwind, Markdown content, as few dependencies 
 7. Pages not migrated yet: relative links and placeholder pages; status page
 8. Layout, navigation, styles, fonts
 9. Images and files
-10. React and shadcn/ui (only when needed)
+10. UI libraries: React, shadcn/ui on Base UI, components
 11. SEO basics, 404, redirects
 12. Checks and gotchas
 
@@ -73,7 +73,8 @@ src/
   data/navigation.json     menus, footer links
   layouts/Base.astro       html head, header, footer (<main data-pagefind-body> if search is built)
   layouts/Wireframe.astro  unstyled content in the site frame, during the migration
-  components/              Header, Footer, ProjectGrid, Gallery …
+  components/site/         SiteNav, Lightbox, Carousel, Motion (install-ui.mjs) and the site's own components
+  components/ui/           shadcn components (Base UI), the site's code once added
   pages/                   routes: index.astro, designed pages, [...path].astro per collection
   styles/global.css        Tailwind import + design tokens
 public/
@@ -250,15 +251,21 @@ After every build it turns leftover absolute links to the old domain into relati
 
 ## 8. Layout, navigation, styles, fonts
 
-- **Tokens** from stage 4 in `src/styles/global.css`, named by role so the palette can change without renaming classes:
+- **Tokens** from stage 4 in `src/styles/global.css`, named by role so the palette can change without renaming classes. shadcn's variables are the main set (libraries.md §4); roles it lacks go into `@theme`:
   ```css
-  @import "tailwindcss";
+  :root {
+    --primary: #c2410c;            /* accent from styles.json */
+    --primary-foreground: #ffffff;
+    --foreground: #1f2937;         /* body text */
+    --muted-foreground: #6b7280;   /* secondary text */
+    --radius: 0.25rem;
+  }
+  @theme inline {
+    --font-sans: var(--font-source-sans);       /* Fonts API variables, libraries.md §11 */
+    --font-heading: var(--font-playfair);
+  }
   @theme {
-    --color-brand: #c2410c;      /* accent from styles.json */
-    --color-ink: #1f2937;        /* headings */
-    --color-muted: #6b7280;      /* body text */
-    --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
-    --font-display: "Playfair Display", ui-serif, Georgia, serif;
+    --color-band: #0f172a;         /* a role shadcn has no variable for */
   }
   ```
 - **Prose:** `@tailwindcss/typography` (`@plugin "@tailwindcss/typography";`) tuned to the extracted typography, or a small set of `.prose` element styles.
@@ -271,13 +278,13 @@ After every build it turns leftover absolute links to the old domain into relati
   ```
   Never reuse old class names that are also Tailwind utilities (`outline`, `list-item`, `hidden`, `block`, `flex`, `grid`, `table`, `container`, `columns`, `contents`, `truncate`, `transform`): Tailwind generates CSS for them and the layout changes silently. Prefix ported component classes (`sc-list-item`) or use Tailwind utilities directly.
 - **Viewport-based themes** (sizes in `vw` that switch at breakpoints): don't force them into Tailwind's spacing scale. Write component CSS with the old values per breakpoint (`snapshot.mjs --css-rules "<selector regex>"` dumps the old rules with their media queries) and keep only colours and fonts as `@theme` tokens.
-- **Fonts:** self-host via Fontsource (`npm i @fontsource/<family>`, import the used weights in `Base.astro`). Never Google's font CDN (privacy-and-legal.md).
-- **Navigation** as data (`src/data/navigation.json`), rendered by `Header.astro`. Mobile menu: `<details>`/`<summary>` or a few lines of script in an Astro `<script>`; no framework needed.
-- **Theme effects** (parallax, sticky header, hover overlays): CSS first (`group-hover:`, `position: sticky`), small `<script>` blocks for the rest, always honouring `prefers-reduced-motion`.
+- **Fonts:** the Astro Fonts API with Fontsource (open-source fonts) or local files (the site's licensed fonts), `<Font>` in the head: libraries.md §11. Never Google's font CDN (privacy-and-legal.md).
+- **Navigation** as data (`src/data/navigation.json`), rendered by `SiteNav` (Base UI dropdowns and phone drawer) in the header: libraries.md §5. Don't build a menu by hand.
+- **Theme effects:** hover overlays and sticky headers in CSS (`group-hover:`, `position: sticky`); scroll-in effects and parallax with `Motion.astro` (libraries.md §9), which honours `prefers-reduced-motion`.
 
 ## 9. Images and files
 
-**SVG icons and logos are files, never inline markup.** Save each as its own `.svg` in `src/assets/icons/` (logos in `src/assets/`), import it and use it as a component: `import MailIcon from '../assets/icons/mail.svg'` and `<MailIcon class="h-6 w-6" aria-hidden="true" />`. Vite processes and optimises them, Astro renders them inline in the HTML (so `currentColor` and hover colours keep working), each icon exists once, and the agent edits one file instead of searching templates for path data. The same applies to icons copied from a theme, an icon set or the old site (the snapshot's `logo.svg`). For an SVG that is just a picture (no colour from CSS), `<img src={logo.src} alt="…">` is fine too.
+**Icons come from Iconify sets or files, never inline markup.** Set icons by name with astro-icon: `<Icon name="lucide:mail" class="size-6" aria-hidden="true" />`, brand logos from `simple-icons` (libraries.md §10). The site's own icons (copied from the theme or the old site, the snapshot's `logo.svg`) are `.svg` files in `src/assets/icons/`, used as `<Icon name="<file-name>" />`. Astro renders them inline in the HTML (so `currentColor` and hover colours keep working), each icon exists once, and the agent edits one file instead of searching templates for path data. Logos live in `src/assets/`; for an SVG that is just a picture (no colour from CSS), `<img src={logo.src} alt="…">` is fine too.
 
 Start simple: downloaded files in `public/media/…` (`download-assets.mjs --out public/media`), referenced as `/media/…`. Works immediately and keeps paths predictable for the agent. In content, reference old URLs first and let `--rewrite` produce the new paths: the script makes file names URL-safe (umlauts transliterated), so hand-typed new paths may not match.
 
@@ -287,11 +294,9 @@ Later improvement (offer it, don't force it): move images to `src/assets/` and u
 
 Every image gets alt text; decorative ones `alt=""`.
 
-## 10. React and shadcn/ui (only when needed)
+## 10. UI libraries: React, shadcn/ui on Base UI, components
 
-Add React when a confirmed feature needs browser state that a few lines of script can't handle cleanly (filterable grid, multi-step form, interactive map): `npx astro add react -y`, then islands (`<ProjectGrid client:visible … />`). Everything else stays `.astro`.
-
-shadcn/ui only if the island benefits from its components (dialog, dropdown, tabs, form controls), following shadcn's current Astro guide (`npx shadcn@latest init`, path alias `@/*`). Not for static pages.
+`scripts/install-ui.mjs` (stage 3) sets up React, shadcn/ui on Base UI (`shadcn init --base base`), astro-icon, PhotoSwipe, Embla and motion, and copies the skill's components to `src/components/site/`: `SiteNav.tsx` (header menu), `Lightbox.astro`, `Carousel.astro`, `Motion.astro`, `image-size.ts`. Everything interactive uses them or a shadcn component in a small island (`npx shadcn@4 add tabs`, then `src/components/site/<Name>.tsx` with `client:visible`). Pages, templates and content stay `.astro` and Markdown; React only renders islands. Setup details, tokens, usage and pitfalls: libraries.md.
 
 ## 11. SEO basics, 404, redirects
 

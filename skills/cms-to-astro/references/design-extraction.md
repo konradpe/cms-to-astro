@@ -66,7 +66,7 @@ From `styles.json`:
 |---|---|---|
 | `typography` (body, h1–h6, p, a, nav, buttons, footer) | font families, sizes, weights, letter-spacing, text-transform per element | Build a small type scale; the theme often uses odd sizes (15px, 38px), keep them in 1:1 mode |
 | `textColors`, `backgroundColors` | `--color-*` tokens named by role | The most frequent text colour is body text; the accent is the colour used for links/hover/headings |
-| `fontFaces`, `loadedFonts`, `fontFamilies` | Fontsource packages with the weights actually used | Drop weights that never appear |
+| `fontFaces`, `loadedFonts`, `fontFamilies` | Astro Fonts API entries (Fontsource or the site's own files) with the weights actually used (libraries.md §11) | Drop weights that never appear |
 | `centeredContainerWidths` | container `max-w-[…]` | Often 1100 to 1200 px |
 | `breakpoints` | Tailwind breakpoints | Defaults (640/768/1024/1280) are fine unless the theme switches layout at a clearly different width |
 | `borderRadii` | radius tokens | |
@@ -80,8 +80,8 @@ From `interactions-<width>.json` and the screenshots:
 - **Submenus:** screenshots show dropdown look; build as CSS `:hover`/`:focus-within` menus that also work with the keyboard.
 - **Sticky header:** `stickyHeader.elements` tells position, height and background after scrolling (themes often switch to a smaller, opaque header).
 - **Mobile menu:** `menu-open-390.png` shows the open state; rebuild with `<details>` or a tiny script, no framework needed.
-- **Parallax** (`effects` with `data-parallax-speed` or similar): reproduce the theme's formula instead of guessing. Common pattern (GoodLayers and others): a background layer inside a clipped box; layer height = box height + (viewport height − box height) × speed; on scroll, `translateY = speed × (scrollY − box top)`. Speed 0.8 means the image drifts at 20% of the scroll speed. Use `requestAnimationFrame`, a passive scroll listener, and skip it for `prefers-reduced-motion`.
-- **Scroll-reveal animations:** keep them subtle or drop them (ask the owner); they hide content from screenshots and some readers.
+- **Parallax** (`effects` with `data-parallax-speed` or similar): reproduce the theme's formula instead of guessing. Common pattern (GoodLayers and others): a background layer inside a clipped box; layer height = box height + (viewport height − box height) × speed; on scroll, `translateY = speed × (scrollY − box top)`. Speed 0.8 means the image drifts at 20% of the scroll speed. Build it with `data-parallax` from `Motion.astro` (libraries.md §9) and adjust the component's formula to this one; it already skips `prefers-reduced-motion`.
+- **Scroll-reveal animations:** keep them subtle or drop them (ask the owner). If they stay, use `data-reveal` from `Motion.astro` (libraries.md §9): it leaves content visible without JavaScript and for reduced motion.
 - **Sliders:** see incompatibilities.md; capture what the slides contain before deciding.
 
 ## 4. Fidelity by kick-off choice

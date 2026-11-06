@@ -1,0 +1,164 @@
+---
+/**
+ * PhotoSwipe lightbox for every image link inside: wrap a gallery, a block list or a Markdown body.
+ *
+ *   <Lightbox><Gallery items={…} /></Lightbox>
+ *   <Lightbox><Content /></Lightbox>          (Markdown: [![alt](thumb.jpg)](large.jpg))
+ *
+ * A link qualifies when it points to an image file and contains an <img>. Without JavaScript the
+ * link simply opens the image. Captions come from the link's <figure><figcaption>, else nothing.
+ * Large-image size: `data-pswp-width`/`-height` on the link when known (build time: imageSize() in
+ * ./image-size.ts); otherwise the clicked image is measured before opening and every other slide
+ * once it has loaded. Labels follow <html lang> (en, de built in) unless `labels` is given.
+ * Requires: npm i photoswipe
+ */
+interface Labels {
+  closeTitle: string;
+  zoomTitle: string;
+  arrowPrevTitle: string;
+  arrowNextTitle: string;
+  errorMsg: string;
+}
+interface Props {
+  class?: string;
+  labels?: Partial<Labels>;
+}
+const { class: className, labels } = Astro.props;
+---
+
+<div data-lightbox class={className} data-lightbox-labels={labels ? JSON.stringify(labels) : undefined}>
+  <slot />
+</div>
+
+<script>
+  import PhotoSwipeLightbox from 'photoswipe/lightbox';
+  import type PhotoSwipe from 'photoswipe';
+  import 'photoswipe/style.css';
+
+  const STRINGS: Record<string, Record<string, string>> = {
+    en: {
+      closeTitle: 'Close',
+      zoomTitle: 'Zoom',
+      arrowPrevTitle: 'Previous image',
+      arrowNextTitle: 'Next image',
+      errorMsg: 'The image could not be loaded.',
+    },
+    de: {
+      closeTitle: 'Schließen',
+      zoomTitle: 'Vergrößern',
+      arrowPrevTitle: 'Vorheriges Bild',
+      arrowNextTitle: 'Nächstes Bild',
+      errorMsg: 'Das Bild konnte nicht geladen werden.',
+    },
+  };
+  const IMAGE = /\.(avif|gif|jpe?g|png|webp)$/i;
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const lang = document.documentElement.lang.slice(0, 2).toLowerCase();
+
+  const measure = (src: string) =>
+    new Promise<{ w: number; h: number } | null>((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-lightbox]')) {
+    const links = [...root.querySelectorAll<HTMLAnchorElement>('a[href]')].filter(
+      (a) => a.origin === location.origin && IMAGE.test(decodeURI(a.pathname)) && a.querySelector('img'),
+    );
+    if (!links.length) continue;
+    for (const a of links) {
+      a.dataset.pswp = '';
+      // Thumbnails shown with object-fit: cover are crops: tell PhotoSwipe, so the zoom animation fits.
+      const img = a.querySelector('img');
+      if (img && getComputedStyle(img).objectFit === 'cover') a.dataset.pswpCropped = 'true';
+    }
+
+    const lightbox = new PhotoSwipeLightbox({
+      gallery: root,
+      children: 'a[data-pswp]',
+      pswpModule: () => import('photoswipe'),
+      showHideAnimationType: reduceMotion ? 'none' : 'zoom',
+      ...(STRINGS[lang] ?? STRINGS.en),
+      ...JSON.parse(root.dataset.lightboxLabels ?? '{}'),
+    });
+
+    // Unknown size: show the thumbnail's proportions first, correct the slide once the image is in.
+    lightbox.addFilter('domItemData', (data, _el, link) => {
+      if (!data.width) {
+        const thumb = link.querySelector('img');
+        const ratio = thumb?.naturalWidth ? thumb.naturalHeight / thumb.naturalWidth : 0.75;
+        data.width = data.w = 1600;
+        data.height = data.h = Math.round(1600 * ratio);
+        (data as Record<string, unknown>).sizeUnknown = true;
+      }
+      return data;
+    });
+    lightbox.on('loadComplete', ({ content, slide, isError }) => {
+      const data = content.data as Record<string, unknown>;
+      const img = content.element as HTMLImageElement | undefined;
+      if (isError || !data.sizeUnknown || !img?.naturalWidth || !(data.element instanceof HTMLElement)) return;
+      const link = data.element as HTMLAnchorElement;
+      link.dataset.pswpWidth = String(img.naturalWidth);
+      link.dataset.pswpHeight = String(img.naturalHeight);
+      (lightbox.pswp as PhotoSwipe | undefined)?.refreshSlideContent(slide.index);
+    });
+
+    // Caption from <figure><figcaption>
+    lightbox.on('uiRegister', () => {
+      lightbox.pswp?.ui?.registerElement({
+        name: 'caption',
+        order: 9,
+        isButton: false,
+        appendTo: 'root',
+        onInit: (el, pswp) => {
+          pswp.on('change', () => {
+            const link = pswp.currSlide?.data.element;
+            const text = link?.closest('figure')?.querySelector('figcaption')?.textContent?.trim() ?? '';
+            el.textContent = text;
+            el.hidden = !text;
+          });
+        },
+      });
+    });
+
+    // Measure the clicked image first when its size is unknown, so the opening animation is right.
+    root.addEventListener(
+      'click',
+      async (event) => {
+        const link = (event.target as Element).closest<HTMLAnchorElement>('a[data-pswp]');
+        if (!link || link.dataset.pswpWidth || event.button !== 0 || event.metaKey || event.ctrlKey) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const size = await measure(link.href);
+        if (size) {
+          link.dataset.pswpWidth = String(size.w);
+          link.dataset.pswpHeight = String(size.h);
+        }
+        const all = [...root.querySelectorAll('a[data-pswp]')];
+        lightbox.loadAndOpen(all.indexOf(link), { gallery: root });
+      },
+      { capture: true },
+    );
+
+    lightbox.init();
+  }
+</script>
+
+<style is:global>
+  .pswp__caption {
+    position: absolute;
+    left: 50%;
+    bottom: 1rem;
+    transform: translateX(-50%);
+    max-width: min(48rem, calc(100% - 2rem));
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.375rem;
+    background: rgb(0 0 0 / 0.6);
+    color: #fff;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    text-align: center;
+  }
+</style>

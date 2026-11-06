@@ -1,7 +1,7 @@
 {
   "name": "cms-to-astro",
-  "description": "Guides you step by step from a WordPress, TYPO3 or other CMS website to a static Astro site in git that you maintain by asking a coding agent: content and design extraction, visual old-vs-new comparison, draft layouts, a page plan with token estimates, handovers for interrupted sessions, repo, CI and deployment.",
-  "version": "0.4.0",
+  "description": "Work in progress. Guides you step by step from a WordPress, TYPO3 or other CMS website to a static Astro site in git that you maintain by asking a coding agent: content and design extraction, visual old-vs-new comparison, draft layouts, a page plan with token estimates, handovers for interrupted sessions, repo, CI and deployment.",
+  "version": "0.5.0-wip",
   "author": {
     "name": "Konrad Peters"
   },
@@ -11,7 +11,9 @@
     "astro",
     "static-site",
     "migration",
-    "tailwind"
+    "tailwind",
+    "shadcn",
+    "base-ui"
   ],
   "repository": "https://github.com/konradpe/cms-to-astro",
   "license": "MIT",

@@ -121,7 +121,7 @@ Default block fields (text fields take the Markdown of `markdown.ts`):
 | `text` | `heading?`, `text` |
 | `image-text` | `heading?`, `text`, `image`, `alt?`, `imageSide?: left \| right` |
 | `cards` | `heading?`, `items: [{ title, text?, image?, alt?, href? }]` |
-| `gallery` | `heading?`, `items: [{ src, alt?, caption?, full? }]` (each links to `full` or `src`; no lightbox script) |
+| `gallery` | `heading?`, `items: [{ src, alt?, caption?, full? }]` (each links to `full` or `src`; no lightbox script: wrap it in the skill's `Lightbox` through a block adapter, the skill's references/libraries.md §7) |
 | `video` | `url` (YouTube/Vimeo), `title?`, `poster?` (a downloaded image: the provider's thumbnail URL would be a request). Click-to-load: nothing loads from the provider before the click |
 | `map` | `heading?`, `address?`, `lat?`, `lng?`, `href?`, `image?` (static link to OpenStreetMap or `href`; no embed) |
 | `contact` | `heading?`, `name?`, `address?`, `phone?`, `email?`, `hours?`, `text?` |

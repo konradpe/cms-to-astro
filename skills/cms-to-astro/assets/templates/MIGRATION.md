@@ -25,6 +25,7 @@ Progress file for moving {{domain}} from {{cms}} to a static Astro site. The age
 | Publishing flow | {{preview first / direct}} | |
 | Who edits later | {{names / roles, how often}} | |
 | Node version | {{from .nvmrc}} | |
+| UI libraries | {{defaults (Base UI via shadcn, Tailwind, motion, Fontsource, Iconify, Embla, PhotoSwipe; references/libraries.md) / exceptions: …}} | |
 
 ## Accounts
 

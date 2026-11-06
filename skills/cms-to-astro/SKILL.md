@@ -1,6 +1,6 @@
 ---
 name: cms-to-astro
-description: Guides a website owner, step by step and in plain language, from a WordPress, TYPO3, Joomla, Drupal or other CMS website to a static Astro site (Tailwind, React islands only where needed) that lives in git and is maintained by asking a coding agent. Covers intake, a page and plugin inventory, a report of features that will not port 1:1 (forms, galleries, sliders, search, shops, languages, cookie banners), content and design extraction, a near 1:1 rebuild or a new design on the same content, visual and content comparison, git repo, CI, deployment (Cloudflare by default, any static host possible) and an agent harness (AGENTS.md/CLAUDE.md) for later edits. Use this skill whenever someone wants to get rid of WordPress or another CMS, move or copy their existing website, make a site static, cut plugin-update or security hassle, rebuild a site in Astro, or continue such a migration (a MIGRATION.md file is present), even if they never say "migration" or "Astro".
+description: Guides a website owner, step by step and in plain language, from a WordPress, TYPO3, Joomla, Drupal or other CMS website to a static Astro site (Tailwind, shadcn/ui on Base UI, tested default libraries) that lives in git and is maintained by asking a coding agent. Covers intake, a page and plugin inventory, a report of features that will not port 1:1 (forms, galleries, sliders, search, shops, languages, cookie banners), content and design extraction, a near 1:1 rebuild or a new design on the same content, visual and content comparison, git repo, CI, deployment (Cloudflare by default, any static host possible) and an agent harness (AGENTS.md/CLAUDE.md) for later edits. Use this skill whenever someone wants to get rid of WordPress or another CMS, move or copy their existing website, make a site static, cut plugin-update or security hassle, rebuild a site in Astro, or continue such a migration (a MIGRATION.md file is present), even if they never say "migration" or "Astro".
 ---
 
 # CMS → static Astro site
@@ -46,6 +46,10 @@ Left to defaults, agents produce generated-looking sites: content chopped into i
 4. **Critique before the owner sees it:** look at desktop and phone screenshots of the pilot against the plan and the list of generic defaults; if the `impeccable` skill is installed, run its `critique` and `audit` on the pilot pages and `polish` before showing them. Fix what they find first.
 
 Details per route: `references/new-design.md` §5 (new design), `references/design-extraction.md` §7 (similar look).
+
+## Default libraries
+
+Menus, drawers, lightboxes, carousels, scroll effects, icons and web fonts come from fixed libraries, never hand-built per site: **Base UI** components through **shadcn/ui**, **Tailwind**, **motion**, **Fontsource** fonts via the Astro Fonts API, **Iconify** icons via astro-icon, **Embla** carousels, **PhotoSwipe** lightboxes. The skill ships tested components for them (`assets/ui/`: header menu, lightbox, carousel, scroll effects), installed with `scripts/install-ui.mjs` in stage 3. Pick these without asking; use another library only when the owner or developer names one, and keep the parts a theme recipe brings itself. Setup, tokens, usage and the pitfalls each one has: `references/libraries.md`.
 
 ## Progress, sessions and handovers
 
@@ -144,7 +148,7 @@ The report necessarily bundles several decisions. That is intended: give each it
 
 ### 3 · Scaffold the project
 
-Read `references/astro-setup.md` and set up Astro + Tailwind, `.nvmrc`, and the scaffold clean-ups listed there (package name, favicon, the scaffold's own README/AGENTS.md). Then install the **migration kit**: `node <skill-dir>/scripts/install-kit.mjs --old-origin <url> --locales <de,en> --url-style <directory|preserve|file>`. It copies the plumbing every migration needs into `src/migration/` and `src/pages/` (every page at its old URL, languages and hreflang, aliases, draft layouts, placeholders for pages not moved yet, the status page, sitemap filter, plain default blocks) and prints the `astro.config.mjs` lines to add; `src/migration/KIT.md` explains it. Don't rebuild any of this by hand. The design plugs in at three points (`src/migration/theme/index.ts`: page shell, page templates, block components). If the scaffold can't download its template (no GitHub access), use the manual fallback in astro-setup.md §1. Before porting theme CSS, read the Tailwind collisions note there (§8). Check `engines` in the new package.json against the Node version. Add React only when a confirmed feature needs interaction in the browser, shadcn/ui only when such a feature benefits from ready-made components. A purely static site needs neither.
+Read `references/astro-setup.md` and set up Astro + Tailwind, `.nvmrc`, and the scaffold clean-ups listed there (package name, favicon, the scaffold's own README/AGENTS.md). Then install the **migration kit**: `node <skill-dir>/scripts/install-kit.mjs --old-origin <url> --locales <de,en> --url-style <directory|preserve|file>`. It copies the plumbing every migration needs into `src/migration/` and `src/pages/` (every page at its old URL, languages and hreflang, aliases, draft layouts, placeholders for pages not moved yet, the status page, sitemap filter, plain default blocks) and prints the `astro.config.mjs` lines to add; `src/migration/KIT.md` explains it. Don't rebuild any of this by hand. The design plugs in at three points (`src/migration/theme/index.ts`: page shell, page templates, block components). If the scaffold can't download its template (no GitHub access), use the manual fallback in astro-setup.md §1. Before porting theme CSS, read the Tailwind collisions note there (§8). Check `engines` in the new package.json against the Node version. Then install the default libraries and components: `node <skill-dir>/scripts/install-ui.mjs` (React, shadcn/ui on Base UI with the header menu, astro-icon, PhotoSwipe, Embla, motion; `--only` for a subset, e.g. with a theme recipe that brings its own header). Read `references/libraries.md` before building any interactive part.
 
 ✋ The empty site runs (`npm run dev`); tell them how to open it.
 
@@ -171,7 +175,7 @@ node <skill-dir>/scripts/snapshot.mjs https://example.com/ https://example.com/a
 
 The script scrolls each page first (lazy and scroll-revealed content appear), takes full-page screenshots at 1440 and 390 px, and writes design values (`styles.json`), the box structure with spacing (`layout-<width>.json`), and interaction states: hover of navigation, buttons and image tiles, dropdowns, sticky header, opened mobile menu (`interactions-<width>.json` and screenshots). Look at the screenshots yourself; numbers alone miss things.
 
-Turn the values into Tailwind tokens (colours by role, fonts, sizes, container width), self-host the fonts, and rebuild effects from the recorded parameters instead of guessing. List fixes for problems of the old theme (contrast, mobile layout) as suggestions next to the extracted values.
+Turn the values into tokens (colours by role into the shadcn variables, fonts, sizes, container width; `references/libraries.md` §4), load the fonts through the Astro Fonts API (§11), and rebuild effects from the recorded parameters instead of guessing (scroll effects with `Motion.astro`, §9). List fixes for problems of the old theme (contrast, mobile layout) as suggestions next to the extracted values.
 
 ✋ (exact copy) Short report: the design values found, effects to rebuild, anything unusual.
 
@@ -276,7 +280,9 @@ Use the go-live checklist in `references/hosting.md`: redirects for every change
 - **Servers that start themselves.** Astro 7's `dev` and `preview` detach and move to the next free port when theirs is taken; an old server keeps answering on the old port. Read the printed URL, stop servers at the end of each stage.
 - **Browser can't reach the server.** A browser in a container cannot open `localhost`; use `--host` and the machine's network IP.
 - **Theme effects.** Effects like parallax have exact parameters in the markup (`data-parallax-speed`); read them.
-- **Inline SVG.** Icons pasted into templates as path data are hard to find and change and bypass Vite; keep each as a `.svg` file under `src/assets/icons/` and import it (astro-setup.md §9).
+- **Inline SVG.** Icons pasted into templates as path data are hard to find and change. Use `<Icon name="lucide:…" />` (astro-icon) for set icons and keep the site's own as `.svg` files in `src/assets/icons/` (`<Icon name="<file>" />`; libraries.md §10).
+- **Hand-built widgets.** A self-made lightbox, slider or burger menu misses focus handling, keyboard use, reduced motion or the no-JavaScript case, and every site gets a different one. Use the components from `install-ui.mjs` (libraries.md).
+- **Fonts that silently don't load.** A wrong family name in the Fonts API config is only a build warning; the site then shows system fonts. Read the build output after adding a font (libraries.md §11).
 - **Contact data in many places.** Migrated pages repeat phone numbers and addresses in body text; central data files don't catch those, a search does. Different values in different places (another address in the English footer) are a question for the owner.
 - **Detail pages behind list pages.** News, projects and events often appear in no sitemap; the inventory follows links from list pages, but check the count against what the owner expects.
 - **Computed numbers.** Count-up counters and "live" statistics are produced by scripts (sometimes prorated by date); what a capture records is a moment, not content. Ask the owner for the real figures and show them as fixed numbers someone updates.
@@ -295,6 +301,7 @@ Use the go-live checklist in `references/hosting.md`: redirects for every change
 | `references/wordpress.md` | WordPress (stages 2 and 5) |
 | `references/other-cms.md` | TYPO3, Joomla, Drupal, Wix, Squarespace, Jimdo, Webflow, static HTML |
 | `references/astro-setup.md` | Stage 3 and whenever you touch project structure |
+| `references/libraries.md` | Stage 3 and before building any menu, gallery, slider, effect, icon or font: the default libraries and components |
 | `references/design-extraction.md` | Stages 4, 6 and 7 for an exact copy or a similar look |
 | `references/new-design.md` | Stages 4, 6 and 7 for a new design on the same content |
 | `references/agent-harness.md` | Stage 8 |
@@ -313,3 +320,5 @@ Scripts (Node ≥ 22; run from the project folder; each prints its options with 
 | `scripts/plan.mjs` | Page plan: statuses derived from the project, manual approved/issue/skipped, PLAN.md with token estimates per design mode (`--mode new`, `similar` or `copy`) |
 | `scripts/wp-export.mjs` | WordPress REST → Markdown, flags builder pages and the front page, media list |
 | `scripts/download-assets.mjs` | Downloads images/files with URL-safe names, prefers originals, rewrites URLs in content |
+| `scripts/install-kit.mjs` | Installs the migration kit (old URLs, languages, wireframes, placeholders, status page) |
+| `scripts/install-ui.mjs` | Installs the default libraries and the tested components (header menu, lightbox, carousel, scroll effects, icons) |

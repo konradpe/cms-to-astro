@@ -54,7 +54,7 @@ Brand basics to settle:
 
 - **Logo:** download the largest version (or the SVG). If only a small raster image exists, ask the owner for the original file (SVG or PDF from their designer): a sharp logo matters more in a clean design.
 - **Colours:** one primary, at most one accent, and neutrals (text, background, borders). Take them from the logo and the old site; check text contrast (at least 4.5:1).
-- **Fonts:** reuse the old fonts only if their licence allows self-hosting (privacy-and-legal.md). Otherwise choose a free font of similar character, self-hosted (e.g. via `@fontsource/<name>`). Two families at most.
+- **Fonts:** reuse the old fonts only if their licence allows self-hosting (privacy-and-legal.md). Otherwise choose a free font of similar character from Fontsource, loaded through the Astro Fonts API (libraries.md §11). Two families at most.
 - **Images:** the old theme may have used small crops; for larger layouts take the originals (`download-assets.mjs --prefer-original`).
 
 ✋ Report to the owner: what the site consists of (menus, page types, section kinds), the brand basics to keep, and the design-source question (§4).
@@ -81,7 +81,7 @@ Record the choice in MIGRATION.md (Decisions → Design source).
 
 **Critique before showing.** After the pilot pages are built, take desktop and phone screenshots and critique them against the design plan and frontend-design's list of generic defaults (identical rounded cards everywhere, one accent on everything, an all-caps label above every heading, numbered markers on things that aren't a sequence, fade-in on every section). If the `impeccable` skill is installed, run `/impeccable critique` and `/impeccable audit` on the pilot pages and `/impeccable polish` afterwards. Fix, then show the owner.
 
-**Pilot.** Turn the chosen direction (or the model theme's look) into Tailwind tokens (`@theme`: colours by role, fonts, type scale, spacing, container width), build the base layout (header with the menu tree from structure.md, footer, mobile menu), the components for the section kinds of the pilot pages (§6), then the home page and one or two typical pages. The wireframe layout and placeholder pages work exactly as in a 1:1 migration.
+**Pilot.** Turn the chosen direction (or the model theme's look) into tokens (shadcn's variables for colours by role and radius, libraries.md §4; `@theme` for fonts, type scale, spacing, container width), build the base layout (header with `SiteNav` and the menu tree from structure.md, footer), the components for the section kinds of the pilot pages (§6), then the home page and one or two typical pages. The wireframe layout and placeholder pages work exactly as in a 1:1 migration.
 
 ## 6. Components and content model
 
@@ -93,7 +93,7 @@ One component per section kind that occurs on the site; rare kinds fold into a m
 | text | prose styles | Markdown body with `@tailwindcss/typography` (`prose`), tuned to the tokens |
 | image-text | `ImageText` | Image left or right, alternating |
 | cards | `CardGrid` | Image, title, short text, link; 2 to 4 columns, one column on phones |
-| gallery | `Gallery` | Grid of originals; a lightbox only if wanted (incompatibilities.md) |
+| gallery | `Gallery` | Grid of originals, wrapped in `Lightbox` (libraries.md §7) |
 | video | `VideoEmbed` | Click-to-load (privacy-and-legal.md) |
 | map | `MapEmbed` | Static image with a link, or click-to-load |
 | form | `ContactForm` | The replacement agreed in stage 2 |
@@ -117,7 +117,7 @@ Pixel differences are meaningless when the design is new. Check what matters ins
 
 ## 8. Changing the look later
 
-Because content (Markdown and schema), URLs (the catch-all route) and look (design values plus a small set of components) are separate, a new look is a restyle, not a migration: change the `@theme` values, then the header, footer, layouts and block components, and check the pages with `compare.mjs --content-only` against the previous build. A theme the owner likes is a model for that restyle, as in §4. AGENTS.md carries this rule for the owner's agent.
+Because content (Markdown and schema), URLs (the catch-all route) and look (design values plus a small set of components) are separate, a new look is a restyle, not a migration: change the token values (shadcn variables and `@theme`), then the header, footer, layouts and block components, and check the pages with `compare.mjs --content-only` against the previous build. A theme the owner likes is a model for that restyle, as in §4. AGENTS.md carries this rule for the owner's agent.
 
 ## 9. Pitfalls
 
@@ -125,5 +125,5 @@ Because content (Markdown and schema), URLs (the catch-all route) and look (desi
 - **Menus.** Keep labels and order unless the owner decides otherwise; regular visitors and search engines know them. Submenus may become a dropdown, a mega menu or section pages: an agreed design decision.
 - **Old CSS creeping back.** Don't import the theme's stylesheet "just for the values"; the brand basics from structure.md are enough.
 - **Image proportions.** New layouts often need other aspect ratios: crop with CSS (`object-fit`, `aspect-ratio`), don't edit the files.
-- **Icons.** Replace icon fonts with SVG files from an openly licensed set, imported as components (astro-setup.md §9); never paste SVG path data into templates.
+- **Icons.** Replace icon fonts with Iconify icons via astro-icon (Lucide for interface icons, Simple Icons for brands; libraries.md §10); never paste SVG path data into templates.
 - **Mixed modes.** Copying some page types 1:1 and redesigning others gives an inconsistent site. When the owner wants one page type "as before" (e.g. a product sheet), keep its structure and order of information but build it from the new design's tokens and components.

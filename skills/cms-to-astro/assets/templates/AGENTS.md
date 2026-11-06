@@ -32,8 +32,8 @@ Node version: see `.nvmrc`.
 | Menu, footer links | `src/data/navigation.json` | |
 | Contact data (address, phone, e-mail) | `src/data/site.json` | Used by templates; migrated page texts may repeat it (see recipe) |
 | Text blocks of designed pages | `src/content/sections/<page>/<block>.md` | {{e.g. about/intro.md}}; layout stays in `src/pages/<page>.astro` |
-| Colours, fonts | `src/styles/global.css` (`@theme`) | Design; change only when asked |
-| Page layout, header, footer | `src/layouts/`, `src/components/` | Design; change only when asked |
+| Colours, fonts | `src/styles/global.css` (shadcn variables in `:root`, `@theme`), fonts in `astro.config.mjs` (`fonts`) | Design; change only when asked |
+| Page layout, header, footer | `src/layouts/`, `src/components/` (menu: `src/components/site/SiteNav.tsx`, data in `src/data/navigation.json`) | Design; change only when asked |
 | Redirects | `public/_redirects` | One line per old → new path |
 
 Frontmatter fields ({{posts}}), example: `src/content/posts/{{example}}.md`
@@ -89,7 +89,8 @@ Commit messages: short, plain description of the change ("Add news item: summer 
 - No passwords, tokens or keys in any file. Secrets belong in the host's or CI's settings.
 - Keep old URLs working: every removed or renamed page gets a redirect.
 - Every image gets alt text (decorative images: `alt=""`).
-- Icons and logos are `.svg` files in `src/assets/icons/` (or `src/assets/`), imported as components. Never paste SVG markup into templates or content.
+- Icons: `<Icon name="lucide:…" />` (astro-icon; brands from `simple-icons:`); the site's own icons and logos are `.svg` files in `src/assets/icons/` (or `src/assets/`). Never paste SVG markup into templates or content.
+- Interactive parts use the installed libraries (Base UI via shadcn, PhotoSwipe `Lightbox`, Embla `Carousel`, motion `Motion`); don't hand-build menus, sliders or lightboxes or add other UI libraries without the owner's OK.
 - Keep the owner's wording; fix only obvious typos unless asked to edit the text.
 - Astro drops a line break between text and a following inline tag: keep `text <em>…</em>` on one line.
 {{Languages: the site exists in {{de, en}}. When content changes in one language, ask whether the other(s) need the same change {{or: the owner's standing rule}}; language-independent data (phone numbers, addresses, prices, dates, names) changes everywhere without asking. Never publish machine translation without the owner's OK. UI texts live in `src/i18n/ui.ts`.}}
