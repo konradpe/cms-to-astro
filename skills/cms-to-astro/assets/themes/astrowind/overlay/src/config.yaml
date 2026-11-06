@@ -1,0 +1,17 @@
+# AstroWind settings, reduced by the cms-to-astro adapter. Site name, URL, languages and URL style live in
+# src/migration/site.config.ts and astro.config.ts; head tags (title, description, canonical, hreflang,
+# Open Graph) come from the kit's <Meta>; menus from src/navigation.ts. Analytics and site verification
+# are removed with their components.
+
+i18n:
+  language: en # fallback only: <html lang> is the page's language
+  textDirection: ltr
+
+apps:
+  blog:
+    isEnabled: false # the theme's blog routes are removed; posts are the kit's `news` collection
+
+ui:
+  # 'system' | 'light' | 'dark' | 'light:only' | 'dark:only'. Light only until the design defines dark
+  # values for the kit blocks too; then pass showToggleTheme to the Header in AstroWindShell.astro.
+  theme: 'light:only'

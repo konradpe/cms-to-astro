@@ -1,0 +1,13 @@
+---
+/**
+ * Alias paths of docs pages (frontmatter `aliases`). Directory-index aliases (/x/) go through
+ * [...alias]/index.astro, so build.format 'preserve' writes them as x/index.html (as the kit's
+ * catch-all does). No aliases, no pages.
+ */
+import AliasPage from '../migration/starlight/AliasPage.astro';
+import { aliasPaths } from '../migration/starlight/docs';
+
+export const getStaticPaths = () => aliasPaths(false);
+---
+
+<AliasPage {...Astro.props} />

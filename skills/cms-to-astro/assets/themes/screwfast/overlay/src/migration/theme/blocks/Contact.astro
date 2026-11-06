@@ -1,0 +1,87 @@
+---
+/**
+ * contact block in the theme's contact style (ContactSection / ContactIconBlock: icon rows divided by
+ * lines next to an intro). Fields: { heading?, name?, address?, phone?, email?, hours?, text? }.
+ * Plain contact details, no form (forms need a form service; see the skill's incompatibilities reference).
+ */
+import MapPinIcon from '@/assets/icons/map-pin.svg';
+import PhoneIcon from '@/assets/icons/phone.svg';
+import MailIcon from '@/assets/icons/mail.svg';
+import ClockIcon from '@/assets/icons/clock.svg';
+import { markdown } from '../../markdown';
+import { t } from '../../strings';
+
+interface Props {
+  heading?: string;
+  name?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  hours?: string;
+  text?: string;
+  locale?: string;
+}
+
+const { heading, name, address, phone, email, hours, text, locale = 'en' } = Astro.props;
+const s = t(locale);
+const tel = phone?.replace(/[^\d+]/g, '');
+const iconClass = 'mt-1 size-6 shrink-0 text-neutral-600';
+const linkClass =
+  'mt-1 inline-flex rounded-lg text-sm font-medium text-neutral-700 underline underline-offset-2 ring-zinc-500 outline-hidden transition duration-300 hover:text-neutral-900 focus-visible:ring-3';
+---
+
+<section class="mx-auto max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 2xl:max-w-full">
+  <div class="grid gap-6 lg:grid-cols-2 lg:gap-16">
+    <div>
+      {heading && <h2 class="text-2xl font-bold tracking-tight text-balance text-neutral-800 md:text-4xl md:leading-tight">{heading}</h2>}
+      {text && <div class="prose prose-neutral mt-3 text-pretty" set:html={markdown(text)} />}
+    </div>
+    <address class="divide-y divide-neutral-300 not-italic">
+      {
+        (name || address) && (
+          <div class="flex gap-x-7 py-6">
+            <MapPinIcon class={iconClass} aria-hidden="true" />
+            <div class="grow">
+              {name && <p class="font-bold text-neutral-700">{name}</p>}
+              {address && <p class="mt-1 text-sm whitespace-pre-line text-neutral-600">{address}</p>}
+            </div>
+          </div>
+        )
+      }
+      {
+        phone && (
+          <div class="flex gap-x-7 py-6">
+            <PhoneIcon class={iconClass} aria-hidden="true" />
+            <div class="grow">
+              <p class="font-bold text-neutral-700">{s.phone}</p>
+              <a class={linkClass} href={`tel:${tel}`}>
+                {phone}
+              </a>
+            </div>
+          </div>
+        )
+      }
+      {
+        email && (
+          <div class="flex gap-x-7 py-6">
+            <MailIcon class={iconClass} aria-hidden="true" />
+            <div class="grow">
+              <p class="font-bold text-neutral-700">{s.email}</p>
+              <a class={linkClass} href={`mailto:${email}`}>
+                {email}
+              </a>
+            </div>
+          </div>
+        )
+      }
+      {
+        hours && (
+          <div class="flex gap-x-7 py-6">
+            <ClockIcon class={iconClass} aria-hidden="true" />
+            <p class="grow pt-1 text-sm whitespace-pre-line text-neutral-600">{hours}</p>
+          </div>
+        )
+      }
+    </address>
+  </div>
+</section>

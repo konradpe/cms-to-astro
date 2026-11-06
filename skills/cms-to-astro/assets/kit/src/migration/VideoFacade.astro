@@ -1,0 +1,26 @@
+---
+/**
+ * Click-to-load for videos: nothing is requested from YouTube/Vimeo until the visitor clicks.
+ * Works for the video block and for this HTML in a Markdown body:
+ *   <div data-kit-video="https://www.youtube-nocookie.com/embed/<id>" data-kit-video-title="…">
+ *     <button type="button">Load video from YouTube. This sends data to YouTube.</button></div>
+ * Included by EntryView and the video block; Astro adds the script once per page.
+ */
+---
+
+<script>
+  document.addEventListener('click', (event) => {
+    const button = (event.target as Element | null)?.closest?.('[data-kit-video] button');
+    const facade = button?.closest<HTMLElement>('[data-kit-video]');
+    const src = facade?.dataset.kitVideo;
+    if (!facade || !src) return;
+    const iframe = document.createElement('iframe');
+    iframe.src = src + (src.includes('?') ? '&' : '?') + 'autoplay=1';
+    iframe.title = facade.dataset.kitVideoTitle ?? 'Video';
+    iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+    iframe.allowFullscreen = true;
+    iframe.style.cssText = 'width:100%;aspect-ratio:16/9;border:0';
+    facade.replaceChildren(iframe);
+    iframe.focus();
+  });
+</script>

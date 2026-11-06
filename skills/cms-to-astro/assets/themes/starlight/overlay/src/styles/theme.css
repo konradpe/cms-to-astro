@@ -1,0 +1,50 @@
+/*
+ * The look of the site (Starlight recipe): Starlight's CSS custom properties, loaded through
+ * `customCss` in astro.config.mjs. The values below are Starlight's defaults; replace them with the
+ * project's design plan (colours by role, fonts), not with a guess. Full list of properties:
+ * node_modules/@astrojs/starlight/dist/style/props.css. Components that need more than tokens are
+ * overridden in astro.config.mjs `components` (references/themes/starlight.md).
+ *
+ * Unlayered CSS here wins over Starlight's own styles (they sit in @layer starlight.*).
+ */
+
+/* Dark mode (and the base for both modes). */
+:root {
+  /* Accent: links, current sidebar entry, buttons. low = backgrounds, high = text on dark. */
+  --sl-color-accent-low: hsl(224, 54%, 20%);
+  --sl-color-accent: hsl(224, 100%, 60%);
+  --sl-color-accent-high: hsl(224, 100%, 85%);
+  /* Gray scale: white = strongest text, black = page background. */
+  --sl-color-white: hsl(0, 0%, 100%);
+  --sl-color-gray-1: hsl(224, 20%, 94%);
+  --sl-color-gray-2: hsl(224, 6%, 77%);
+  --sl-color-gray-3: hsl(224, 6%, 56%);
+  --sl-color-gray-4: hsl(224, 7%, 36%);
+  --sl-color-gray-5: hsl(224, 10%, 23%);
+  --sl-color-gray-6: hsl(224, 14%, 16%);
+  --sl-color-black: hsl(224, 10%, 10%);
+
+  /* Fonts: self-hosted files (src/assets/fonts or @fontsource), never a font CDN. */
+  /* --sl-font: 'Body Font', system-ui, sans-serif; */
+  /* --sl-font-mono: 'Mono Font', ui-monospace, monospace; */
+
+  /* Layout */
+  /* --sl-content-width: 45rem; */
+  /* --sl-sidebar-width: 18.75rem; */
+}
+
+/* Light mode. */
+:root[data-theme='light'] {
+  --sl-color-accent-low: hsl(234, 88%, 90%);
+  --sl-color-accent: hsl(234, 90%, 60%);
+  --sl-color-accent-high: hsl(234, 80%, 30%);
+  --sl-color-white: hsl(224, 10%, 10%);
+  --sl-color-gray-1: hsl(224, 14%, 16%);
+  --sl-color-gray-2: hsl(224, 10%, 23%);
+  --sl-color-gray-3: hsl(224, 7%, 36%);
+  --sl-color-gray-4: hsl(224, 6%, 56%);
+  --sl-color-gray-5: hsl(224, 6%, 77%);
+  --sl-color-gray-6: hsl(224, 20%, 94%);
+  --sl-color-gray-7: hsl(224, 19%, 97%);
+  --sl-color-black: hsl(0, 0%, 100%);
+}

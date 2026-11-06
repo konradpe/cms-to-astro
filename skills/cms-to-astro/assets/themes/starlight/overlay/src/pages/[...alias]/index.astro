@@ -1,0 +1,9 @@
+---
+/** Directory-index alias paths (/x/) of docs pages; see ../[...alias].astro. */
+import AliasPage from '../../migration/starlight/AliasPage.astro';
+import { aliasPaths } from '../../migration/starlight/docs';
+
+export const getStaticPaths = () => aliasPaths(true);
+---
+
+<AliasPage {...Astro.props} />

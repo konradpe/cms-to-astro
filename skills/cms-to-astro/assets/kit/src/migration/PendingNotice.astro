@@ -1,0 +1,43 @@
+---
+/**
+ * "This page hasn't been moved yet" with a link to the old version. Used by the placeholder
+ * templates (src/pages/migration-pending/) and by home pages without a content file.
+ * `data-migration="pending"` is what plan.mjs looks for. Delete at go-live.
+ */
+import { t } from './strings';
+
+interface Props {
+  locale: string;
+  /** Absolute URL on the old site, or the `__OLD_URL__` token in the placeholder template. */
+  oldUrl: string;
+  /** Path shown in the link text, or the `__PATH__` token. */
+  path: string;
+}
+
+const { locale, oldUrl, path } = Astro.props;
+const s = t(locale);
+---
+
+<section data-migration="pending" data-pagefind-ignore="all" class="kit-pending">
+  <p class="eyebrow">{s.pendingEyebrow}</p>
+  <h1>{s.pendingTitle}</h1>
+  <p>{s.pendingText}</p>
+  <p>
+    <a href={oldUrl} data-old-site target="_blank" rel="noopener">{s.pendingLink(path)}</a>
+  </p>
+</section>
+
+<style>
+  .kit-pending {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding-block: 3rem;
+    text-align: center;
+  }
+  .eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+</style>

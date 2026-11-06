@@ -1,0 +1,37 @@
+---
+/**
+ * video → AstroWind Video: only the local poster loads with the page; the player (youtube-nocookie,
+ * Vimeo with dnt) is created on click. The caption carries the kit's privacy note. Other URLs fall
+ * back to the kit's block (a plain link). Fields: url, title?, poster? (a downloaded image, /media/…).
+ */
+import VideoWidget from '~/components/widgets/Video.astro';
+import KitVideo from '../../blocks/Video.astro';
+import { t } from '../../strings';
+
+interface Props {
+  url: string;
+  title?: string;
+  poster?: string;
+  locale?: string;
+}
+
+const { url = '', title, poster, locale = 'en' } = Astro.props;
+const youtube = url.match(/(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/)?.[1];
+const vimeo = youtube ? undefined : url.match(/vimeo\.com\/(?:video\/)?(\d+)/)?.[1];
+const provider = youtube ? 'YouTube' : 'Vimeo';
+const note = t(locale).videoLoad(provider);
+---
+
+{
+  youtube || vimeo ? (
+    <VideoWidget
+      youtube={youtube}
+      vimeo={vimeo}
+      videoTitle={title ?? 'Video'}
+      poster={poster ? { src: poster, alt: '' } : undefined}
+      caption={title ? `${title} · ${note}` : note}
+    />
+  ) : (
+    <KitVideo url={url} title={title} poster={poster} locale={locale} />
+  )
+}

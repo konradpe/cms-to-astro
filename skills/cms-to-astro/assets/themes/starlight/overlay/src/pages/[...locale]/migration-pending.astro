@@ -1,0 +1,29 @@
+---
+/**
+ * Placeholder templates (Starlight recipe; replaces the kit's src/pages/migration-pending/[...locale].astro):
+ * /migration-pending/ for the default language and /<prefix>/migration-pending/ for every prefixed one.
+ * Starlight reads the language of a page (UI texts, sidebar) from its URL prefix, so each template
+ * lives under its language. pendingPages({ localeTemplates }) in astro.config.mjs maps each prefix to
+ * its template; after the build the templates are copied to every linked path not moved yet and
+ * deleted. Delete at go-live.
+ */
+import { Shell } from '../../migration/theme';
+import PendingNotice from '../../migration/PendingNotice.astro';
+import { buildMeta } from '../../migration/meta';
+import { t } from '../../migration/strings';
+import { DEFAULT_LOCALE, LOCALES, prefixOf } from '../../migration/urls';
+
+export function getStaticPaths() {
+  return [
+    { params: { locale: undefined }, props: { locale: DEFAULT_LOCALE } },
+    ...LOCALES.filter((l) => prefixOf(l)).map((locale) => ({ params: { locale: prefixOf(locale) }, props: { locale } })),
+  ];
+}
+
+const { locale } = Astro.props;
+const meta = buildMeta({ title: t(locale).pendingTitle, locale, noindex: true });
+---
+
+<Shell meta={meta}>
+  <PendingNotice locale={locale} oldUrl="__OLD_URL__" path="__PATH__" />
+</Shell>

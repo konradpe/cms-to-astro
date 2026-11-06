@@ -1,0 +1,14 @@
+---
+/**
+ * 404 pages of the prefixed languages (en/404.html), for hosts that use the nearest 404.html
+ * (Cloudflare). build.format 'directory' writes en/404/index.html; src/migration/locale-404.mjs moves it.
+ */
+import NotFound from '../../migration/NotFound.astro';
+import { LOCALES, prefixOf } from '../../migration/urls';
+
+export function getStaticPaths() {
+  return LOCALES.filter((l) => prefixOf(l)).map((locale) => ({ params: { locale: prefixOf(locale) }, props: { locale } }));
+}
+---
+
+<NotFound locale={Astro.props.locale} />

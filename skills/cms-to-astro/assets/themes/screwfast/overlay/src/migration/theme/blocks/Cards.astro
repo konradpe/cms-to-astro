@@ -1,0 +1,57 @@
+---
+/**
+ * cards block in the theme's card style (CardInsight: rounded image that zooms on hover, bold title,
+ * text, orange arrow) on a 1/2/3-column grid. Fields: { heading?, items: [{ title, text?, image?, alt?, href? }] }.
+ * A card with href is one link (the title link stretches over the card, so links in its text stay valid).
+ */
+import ArrowRightIcon from '@/assets/icons/arrow-right.svg';
+import { markdown } from '../../markdown';
+
+interface Card {
+  title: string;
+  text?: string;
+  image?: string;
+  alt?: string;
+  href?: string;
+}
+interface Props {
+  heading?: string;
+  items?: Card[];
+}
+
+const { heading, items = [] } = Astro.props;
+---
+
+<section class="mx-auto max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 2xl:max-w-full">
+  {heading && <h2 class="mb-10 text-2xl font-bold text-balance text-neutral-800 md:text-4xl md:leading-tight">{heading}</h2>}
+  <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+    {
+      items.map((card) => (
+        <li class:list={['group relative flex flex-col rounded-xl', !card.image && 'bg-neutral-50 p-6']}>
+          {card.image && (
+            <div class="relative overflow-hidden rounded-xl pt-[50%] sm:pt-[70%]">
+              <img
+                src={card.image}
+                alt={card.alt ?? ''}
+                class="absolute start-0 top-0 size-full rounded-xl object-cover transition duration-500 ease-in-out group-hover:scale-105"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          )}
+          <h3 class:list={['text-xl font-bold text-neutral-800', card.image && 'mt-7']}>
+            {card.href ? (
+              <a href={card.href} class="rounded-lg ring-zinc-500 outline-hidden group-hover:text-neutral-600 after:absolute after:inset-0 after:rounded-xl focus-visible:ring-3">
+                {card.title}
+              </a>
+            ) : (
+              card.title
+            )}
+          </h3>
+          {card.text && <div class="prose prose-neutral mt-3 text-neutral-600" set:html={markdown(card.text)} />}
+          {card.href && <ArrowRightIcon class="mt-5 size-5 shrink-0 text-orange-400 transition duration-300 group-hover:translate-x-1" aria-hidden="true" />}
+        </li>
+      ))
+    }
+  </ul>
+</section>

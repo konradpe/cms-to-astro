@@ -1,0 +1,52 @@
+---
+/**
+ * Override of Starlight's LanguageSelect (astro.config.mjs `components`). Starlight swaps the URL
+ * prefix (/kontakt → /en/kontakt), which breaks translated slugs. This one offers each language's
+ * version of the page by `translationKey` (/kontakt ↔ /en/contact), else that language's home page,
+ * from locals.migration.meta (route-data.ts). Labels: the language's own name (Intl), as Starlight's
+ * defaults; custom `label`s in the Starlight config are not read. Pages without migration data use
+ * Starlight's own component.
+ */
+import Default from '@astrojs/starlight/components/LanguageSelect.astro';
+import Select from '@astrojs/starlight/components/Select.astro';
+import { languageLabel } from './docs';
+
+const languages = Astro.locals.migration?.meta.languages;
+---
+
+{
+  languages ? (
+    languages.length > 1 && (
+      <migration-lang-select>
+        <Select
+          icon="translate"
+          label={Astro.locals.t('languageSelect.accessibleLabel')}
+          options={languages.map((l) => ({ value: l.href, selected: l.current, label: languageLabel(l.lang) }))}
+          width="7em"
+        />
+      </migration-lang-select>
+    )
+  ) : (
+    <Default />
+  )
+}
+
+<script>
+  class MigrationLanguageSelect extends HTMLElement {
+    constructor() {
+      super();
+      const select = this.querySelector('select');
+      if (!select) return;
+      select.addEventListener('change', () => {
+        window.location.href = select.value;
+      });
+      // Back/forward cache: show the language of this page again.
+      window.addEventListener('pageshow', (event) => {
+        if (!event.persisted) return;
+        const index = select.querySelector<HTMLOptionElement>('option[selected]')?.index;
+        if (index !== undefined && index !== select.selectedIndex) select.selectedIndex = index;
+      });
+    }
+  }
+  customElements.define('migration-lang-select', MigrationLanguageSelect);
+</script>

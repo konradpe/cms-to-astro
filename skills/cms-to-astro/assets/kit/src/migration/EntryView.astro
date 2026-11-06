@@ -1,0 +1,76 @@
+---
+/**
+ * One migrated entry at one of its URLs. Decides the view:
+ *   wireframe: true  → Wireframe (draft layout, plain content; blocks below it)
+ *   blocks           → the blocks (registry in theme/index.ts), then the body if there is one
+ *   otherwise        → the styled page template (theme/index.ts `templates`, `template` field)
+ * `path` is the URL being built; for an alias it differs from the entry's main URL, which then
+ * becomes the canonical URL (and the alias page carries no hreflang).
+ */
+import { render } from 'astro:content';
+import { Shell, templates } from './theme';
+import Wireframe from './Wireframe.astro';
+import Blocks from './Blocks.astro';
+import VideoFacade from './VideoFacade.astro';
+import { buildMeta } from './meta';
+import { getEntries, hrefOf, localeOf, titleOf, translationsOf, type MigrationEntry } from './content';
+
+interface Props {
+  entry: MigrationEntry;
+  path?: string;
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+const main = hrefOf(entry);
+const path = Astro.props.path ?? main;
+const isAlias = path !== main;
+const locale = localeOf(entry);
+const title = titleOf(entry);
+const meta = buildMeta({
+  title,
+  description: data.description,
+  locale,
+  path,
+  canonical: main,
+  translations: isAlias ? undefined : translationsOf(entry, await getEntries()),
+  noindex: data.noindex,
+  image: data.featuredImage,
+});
+
+const { Content } = await render(entry);
+const hasBody = !!entry.body?.trim();
+// Unedited Markdown may start with its own "# Heading"; then the layout adds none (one <h1>).
+const heading = /^\s*#\s/.test(entry.body ?? '') ? false : title;
+const blocks = data.blocks ?? [];
+const Template = templates[data.template ?? 'page'] ?? templates.page;
+if (data.template && !templates[data.template]) console.warn(`[migration] ${entry.collection}/${entry.id}: unknown template "${data.template}", using "page"`);
+---
+
+{
+  data.wireframe ? (
+    <Wireframe meta={meta} heading={heading} oldUrl={data.oldUrl}>
+      {hasBody && <Content />}
+      <Blocks slot="after" blocks={blocks} locale={locale} />
+      <VideoFacade />
+    </Wireframe>
+  ) : blocks.length ? (
+    <Shell meta={meta}>
+      {blocks[0].type !== 'hero' && <h1>{title}</h1>}
+      <Blocks blocks={blocks} locale={locale} />
+      {hasBody && (
+        <Template entry={entry} meta={meta} heading={false}>
+          <Content />
+        </Template>
+      )}
+      <VideoFacade />
+    </Shell>
+  ) : (
+    <Shell meta={meta}>
+      <Template entry={entry} meta={meta} heading={heading}>
+        <Content />
+      </Template>
+      <VideoFacade />
+    </Shell>
+  )
+}

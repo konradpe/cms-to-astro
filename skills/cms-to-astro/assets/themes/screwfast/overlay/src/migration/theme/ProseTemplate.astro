@@ -1,0 +1,37 @@
+---
+/**
+ * Page template `page` (integration point 2): the theme's article layout (as on its blog posts):
+ * narrow column, bold title, date for dated entries outside `pages` (news), the Markdown body in
+ * Tailwind Typography's `prose`. Props { entry, meta, heading }; default slot = the rendered body.
+ */
+import type { MigrationEntry } from '../content';
+import type { PageMeta } from '../meta';
+
+interface Props {
+  entry: MigrationEntry;
+  meta: PageMeta;
+  /** The visible <h1>; false when the body starts with its own "# Heading" (or follows blocks). */
+  heading: string | false;
+}
+
+const { entry, meta, heading } = Astro.props;
+const date = entry.collection !== 'pages' ? entry.data.date : undefined;
+---
+
+<article class="mx-auto max-w-3xl px-4 pt-10 pb-12 sm:px-6 lg:px-8 lg:pt-14">
+  {
+    (heading || date) && (
+      <header class="mb-6">
+        {heading && <h1 class="text-3xl font-extrabold tracking-tight text-balance text-neutral-800 md:text-4xl">{heading}</h1>}
+        {date && (
+          <time datetime={date.toISOString().slice(0, 10)} class="mt-2 block text-sm text-neutral-600">
+            {date.toLocaleDateString(meta.lang, { dateStyle: 'long' })}
+          </time>
+        )}
+      </header>
+    )
+  }
+  <div class="prose prose-lg prose-neutral max-w-none text-pretty prose-headings:text-neutral-800 prose-a:underline-offset-2 prose-img:rounded-xl">
+    <slot />
+  </div>
+</article>

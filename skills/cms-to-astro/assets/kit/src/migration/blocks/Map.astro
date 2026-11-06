@@ -1,0 +1,59 @@
+---
+/**
+ * map: { heading?, address?, lat?, lng?, href?, image?, alt? }. No embedded map (no request to a
+ * map provider): a link to OpenStreetMap (or `href`, e.g. the old site's Google Maps link), with an
+ * optional local image of the map (/media/…).
+ */
+import { t } from '../strings';
+
+interface Props {
+  heading?: string;
+  address?: string;
+  lat?: number;
+  lng?: number;
+  href?: string;
+  image?: string;
+  alt?: string;
+  locale?: string;
+}
+
+const { heading, address, lat, lng, href, image, alt = '', locale = 'en' } = Astro.props;
+const s = t(locale);
+const link =
+  href ??
+  (lat !== undefined && lng !== undefined
+    ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`
+    : address
+      ? `https://www.openstreetmap.org/search?query=${encodeURIComponent(address.replace(/\n/g, ', '))}`
+      : undefined);
+---
+
+<section class="kit-map">
+  {heading && <h2>{heading}</h2>}
+  {address && <p class="address">{address}</p>}
+  {
+    link && (
+      <a href={link} target="_blank" rel="noopener">
+        {image && <img src={image} alt={alt} loading="lazy" decoding="async" />}
+        <span>{s.mapOpen}</span>
+      </a>
+    )
+  }
+</section>
+
+<style>
+  .kit-map {
+    margin-block: 0 2.5rem;
+  }
+  .address {
+    white-space: pre-line;
+  }
+  img {
+    display: block;
+    width: 100%;
+    max-width: 40rem;
+    height: auto;
+    margin-bottom: 0.5rem;
+    border-radius: var(--kit-radius, 0.5rem);
+  }
+</style>

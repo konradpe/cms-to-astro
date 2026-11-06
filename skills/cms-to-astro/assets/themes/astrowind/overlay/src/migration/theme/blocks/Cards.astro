@@ -1,0 +1,46 @@
+---
+/**
+ * cards → AstroWind Projects (image cards) when any card has an image, else Features2 (text cards).
+ * A card with href is one link. Fields: heading?, items: [{ title, text?, image?, alt?, href? }].
+ */
+import Projects from '~/components/widgets/Projects.astro';
+import Features2 from '~/components/widgets/Features2.astro';
+import { columnsFor, esc, inlineMd, labels } from '../aw';
+
+interface Card {
+  title: string;
+  text?: string;
+  image?: string;
+  alt?: string;
+  href?: string;
+}
+interface Props {
+  heading?: string;
+  items?: Card[];
+  locale?: string;
+}
+
+const { heading, items = [], locale } = Astro.props;
+const title = heading ? esc(heading) : undefined;
+const description = (text?: string) => inlineMd(text) ?? (text ? esc(text) : undefined);
+const columns = columnsFor(items.length);
+const more = labels(locale).more;
+---
+
+{
+  items.some((i) => i.image) ? (
+    <Projects
+      title={title}
+      columns={columns}
+      items={items.map((i) => ({
+        title: i.title,
+        description: description(i.text),
+        image: i.image ? { src: i.image, alt: i.alt ?? '' } : undefined,
+        href: i.href,
+        linkText: more,
+      }))}
+    />
+  ) : (
+    <Features2 title={title} columns={columns} items={items.map((i) => ({ title: i.title, description: description(i.text), href: i.href }))} />
+  )
+}

@@ -1,0 +1,33 @@
+---
+/**
+ * contact → AstroWind Features: contact details as an icon list (address, phone, e-mail, hours).
+ * AstroWind's own Contact widget is a form that needs a form service; this block shows plain details.
+ * Fields: heading?, name?, address?, phone?, email?, hours?, text?.
+ */
+import Features from '~/components/widgets/Features.astro';
+import { t } from '../../strings';
+import { esc, inlineMd, labels, lines } from '../aw';
+
+interface Props {
+  heading?: string;
+  name?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  hours?: string;
+  text?: string;
+  locale?: string;
+}
+
+const { heading, name, address, phone, email, hours, text, locale = 'en' } = Astro.props;
+const s = t(locale);
+const link = (href: string, label: string) => `<a class="text-primary hover:underline" href="${esc(href)}">${esc(label)}</a>`;
+const items = [
+  (name || address) && { icon: 'tabler:map-pin', title: name, description: lines(address) },
+  phone && { icon: 'tabler:phone', title: s.phone, description: link(`tel:${phone.replace(/[^\d+]/g, '')}`, phone) },
+  email && { icon: 'tabler:mail', title: s.email, description: link(`mailto:${email}`, email) },
+  hours && { icon: 'tabler:clock', title: labels(locale).hours, description: lines(hours) },
+].filter((i) => !!i);
+---
+
+<Features title={heading ? esc(heading) : undefined} subtitle={inlineMd(text)} items={items} columns={2} />

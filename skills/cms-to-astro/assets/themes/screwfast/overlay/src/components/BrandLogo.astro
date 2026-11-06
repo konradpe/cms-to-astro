@@ -1,0 +1,24 @@
+---
+/**
+ * The site's logo (src/assets/logo.svg) and, next to it, the site name from
+ * src/migration/site.config.ts. Header and footer both use this component.
+ * Replace logo.svg with the owner's logo; set SHOW_NAME to false when the logo
+ * already contains the name.
+ */
+import Logo from '@/assets/logo.svg';
+import { site } from '../migration/site.config';
+
+const SHOW_NAME = true;
+
+interface Props {
+  /** Size of the logo image, e.g. `h-8 w-auto`. */
+  class?: string;
+}
+
+const { class: className = 'h-8 w-auto' } = Astro.props;
+---
+
+<span class="inline-flex items-center gap-x-2.5 text-neutral-800">
+  <Logo class={className} aria-hidden="true" />
+  {SHOW_NAME && <span class="text-lg font-bold tracking-tight">{site.name}</span>}
+</span>

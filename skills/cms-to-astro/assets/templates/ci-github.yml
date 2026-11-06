@@ -1,0 +1,21 @@
+# Build check: runs on every push to main and on every pull request.
+# A failing build blocks nothing by itself, but hosts with git integration won't deploy a broken build,
+# and the red mark tells the agent to fix the change before publishing.
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build

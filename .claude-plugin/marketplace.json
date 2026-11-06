@@ -1,0 +1,30 @@
+{
+  "name": "cms-to-astro",
+  "description": "Move a CMS website (WordPress, TYPO3, …) to a static Astro site that a coding agent maintains.",
+  "owner": {
+    "name": "Konrad Peters"
+  },
+  "plugins": [
+    {
+      "name": "cms-to-astro",
+      "source": "./",
+      "description": "Step-by-step migration of a CMS website to a static Astro site, with git, CI and an agent setup for easy maintenance.",
+      "version": "0.4.0"
+    },
+    {
+      "name": "impeccable",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/pbakaus/impeccable.git",
+        "path": "plugin",
+        "sha": "c3bb418ee38ee49a6b999b7752c1368f3123a2bd"
+      },
+      "description": "Design review and refinement commands (critique, audit, polish, typeset, layout …) by Paul Bakaus, Apache-2.0. Pinned to a tested commit. Note: installs hooks that run at session start, after file edits and at the end of each turn.",
+      "license": "Apache-2.0",
+      "category": "design"
+    }
+  ],
+  "allowCrossMarketplaceDependenciesOn": [
+    "claude-plugins-official"
+  ]
+}

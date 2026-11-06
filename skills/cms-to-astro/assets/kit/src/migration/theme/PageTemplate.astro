@@ -1,0 +1,65 @@
+---
+/**
+ * Default styled page (integration point 2, `templates.page` in index.ts): heading, date for dated
+ * entries outside `pages` (news, posts), the Markdown body as prose. A theme recipe replaces it with
+ * the theme's article/prose layout; further named templates are picked by frontmatter `template`.
+ */
+import type { MigrationEntry } from '../content';
+import type { PageMeta } from '../meta';
+
+interface Props {
+  entry: MigrationEntry;
+  meta: PageMeta;
+  /** The visible <h1>; false when the body starts with its own "# Heading". */
+  heading: string | false;
+}
+
+const { entry, meta, heading } = Astro.props;
+const date = entry.collection !== 'pages' ? entry.data.date : undefined;
+---
+
+<article class="kit-page">
+  {
+    (heading || date) && (
+      <header>
+        {heading && <h1>{heading}</h1>}
+        {date && <time datetime={date.toISOString().slice(0, 10)}>{date.toLocaleDateString(meta.lang, { dateStyle: 'long' })}</time>}
+      </header>
+    )
+  }
+  <div class="kit-prose">
+    <slot />
+  </div>
+</article>
+
+<style>
+  .kit-page {
+    max-width: 46rem;
+    margin: 0 auto;
+  }
+  header {
+    margin-bottom: 1.5rem;
+  }
+  h1 {
+    margin: 0 0 0.25rem;
+    line-height: 1.2;
+  }
+  time {
+    color: var(--kit-muted, #5b6270);
+  }
+  .kit-prose :global(img),
+  .kit-prose :global(video) {
+    max-width: 100%;
+    height: auto;
+  }
+  .kit-prose :global(table) {
+    border-collapse: collapse;
+    display: block;
+    overflow-x: auto;
+  }
+  .kit-prose :global(th),
+  .kit-prose :global(td) {
+    border: 1px solid var(--kit-line, #d9dce1);
+    padding: 0.25rem 0.5rem;
+  }
+</style>

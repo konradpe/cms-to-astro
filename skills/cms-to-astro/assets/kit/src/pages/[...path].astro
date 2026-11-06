@@ -1,0 +1,14 @@
+---
+/**
+ * Every migrated entry at its old path (/kontakt, /about.html, /news/x/), alias paths, and a
+ * "not moved yet" page for language homes without content. Directory indexes (/, /en/, /x/) are
+ * built by [...path]/index.astro, so build.format 'preserve' writes them as x/index.html.
+ * Real page files (src/pages/about.astro) win; the catch-all leaves their paths out.
+ */
+import Route from '../migration/Route.astro';
+import { staticPaths } from '../migration/content';
+
+export const getStaticPaths = () => staticPaths(false);
+---
+
+<Route {...Astro.props} />

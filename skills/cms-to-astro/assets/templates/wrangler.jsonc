@@ -1,0 +1,11 @@
+// Cloudflare Workers with static assets: serves the built Astro site from ./dist.
+// No adapter needed for a static site. Set "name" (becomes <name>.<account>.workers.dev)
+// and "compatibility_date" (the day you first deploy).
+{
+  "name": "{{site-name}}",
+  "compatibility_date": "{{YYYY-MM-DD}}",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}

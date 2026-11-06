@@ -1,0 +1,59 @@
+---
+/**
+ * Override of Starlight's MarkdownContent (astro.config.mjs `components`): Starlight's own content
+ * wrapper plus
+ *   - the draft note for `wireframe: true` (converted, not reviewed yet), with the kit's marker
+ *     data-migration="wireframe" (plan.mjs) and a link to the old page (data-old-site);
+ *   - the kit's click-to-load script for videos in Markdown (<div data-kit-video="…">).
+ * Remove the wireframe note at go-live (or keep it if some pages stay unreviewed).
+ */
+import Default from '@astrojs/starlight/components/MarkdownContent.astro';
+import { Icon } from '@astrojs/starlight/components';
+import VideoFacade from '../VideoFacade.astro';
+import { t } from '../strings';
+import { DEFAULT_LOCALE } from '../urls';
+
+const { data } = Astro.locals.starlightRoute.entry;
+const s = t(Astro.locals.migration?.meta.locale ?? DEFAULT_LOCALE);
+---
+
+<Default>
+  {
+    data.wireframe && (
+      <p class="migration-wireframe" data-migration="wireframe" data-pagefind-ignore>
+        <Icon name="pencil" size="1.25em" />
+        <span>
+          {s.wireframeNote}
+          {data.oldUrl && (
+            <>
+              {' '}
+              {s.wireframeOld}{' '}
+              <a href={data.oldUrl} data-old-site target="_blank" rel="noopener">
+                {s.wireframeOldLink}
+              </a>
+            </>
+          )}
+        </span>
+      </p>
+    )
+  }
+  <slot />
+</Default>
+<VideoFacade />
+
+<style>
+  .migration-wireframe {
+    display: flex;
+    gap: 0.75em;
+    align-items: center;
+    padding: 0.75em 1em;
+    border: 1px dashed var(--sl-color-orange);
+    background-color: var(--sl-color-orange-low);
+    color: var(--sl-color-orange-high);
+    font-size: var(--sl-text-body-sm);
+    line-height: var(--sl-line-height-headings);
+  }
+  .migration-wireframe a {
+    color: inherit;
+  }
+</style>

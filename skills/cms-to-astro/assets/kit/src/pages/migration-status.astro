@@ -1,0 +1,95 @@
+---
+/**
+ * Progress overview for the owner at /migration-status/. Reads the page plan of plan.mjs
+ * (.migration/plan.json); run `plan.mjs update` before building to refresh it. Excluded from the
+ * sitemap (src/migration/sitemap.mjs). Delete at go-live.
+ */
+import { readFileSync } from 'node:fs';
+import { Shell } from '../migration/theme';
+import { buildMeta } from '../migration/meta';
+import { t } from '../migration/strings';
+import { DEFAULT_LOCALE } from '../migration/urls';
+
+interface PlanPage {
+  path: string;
+  url?: string;
+  group: string;
+  status: string;
+  title?: string;
+  note?: string;
+}
+
+const s = t(DEFAULT_LOCALE);
+let plan: { updatedAt?: string; pages: PlanPage[] } | undefined;
+try {
+  plan = JSON.parse(readFileSync('.migration/plan.json', 'utf8'));
+} catch {
+  console.warn('[migration-status] .migration/plan.json not readable; the status page shows a hint.');
+}
+const pages = plan?.pages ?? [];
+// Link to the page as the old site (and so the new one) serves it.
+const hrefOf = (p: PlanPage) => {
+  try {
+    if (p.url) return new URL(p.url).pathname;
+  } catch {}
+  return p.path;
+};
+const groups = Object.entries(pages.reduce<Record<string, PlanPage[]>>((acc, p) => ((acc[p.group] ??= []).push(p), acc), {})).sort((a, b) => b[1].length - a[1].length);
+const done = pages.filter((p) => ['styled', 'compared', 'approved'].includes(p.status)).length;
+const meta = buildMeta({ title: s.statusTitle, locale: DEFAULT_LOCALE, noindex: true });
+---
+
+<Shell meta={meta}>
+  <section data-migration="pending" data-pagefind-ignore="all" class="kit-status">
+    <h1>{s.statusTitle}</h1>
+    {plan ? <p>{s.statusSummary(done, pages.length, plan.updatedAt?.slice(0, 10) ?? '')}</p> : <p>{s.statusNoPlan}</p>}
+    {
+      groups.map(([group, list]) => (
+        <details open={list.length <= 12}>
+          <summary>
+            {group} ({list.length})
+          </summary>
+          <ul>
+            {list.map((p) => (
+              <li>
+                <span class="status">{s.statusLabels[p.status] ?? p.status}</span>
+                {p.status === 'skipped' ? <span>{p.title ?? p.path}</span> : <a href={hrefOf(p)}>{p.title ?? hrefOf(p)}</a>}
+                {p.note && <span class="note">– {p.note}</span>}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ))
+    }
+  </section>
+</Shell>
+
+<style>
+  .kit-status {
+    max-width: 56rem;
+    margin: 0 auto;
+  }
+  details {
+    margin-top: 1.5rem;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.75rem;
+  }
+  .status {
+    flex: 0 0 12rem;
+    opacity: 0.7;
+  }
+  .note {
+    opacity: 0.7;
+  }
+</style>

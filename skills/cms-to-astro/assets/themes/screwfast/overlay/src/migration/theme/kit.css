@@ -1,0 +1,97 @@
+/*
+ * The migration kit's own markup under the theme's styles. Tailwind's reset (preflight) removes
+ * heading sizes, margins and list bullets, and the kit's plain components carry no Tailwind classes,
+ * so this file gives them the theme's type and section spacing:
+ *   - the title the kit adds above a blocks page that doesn't start with a hero,
+ *   - the kit's default blocks (gallery, video, map; the others too, should one be switched back),
+ *   - draft layout (wireframe), "not moved yet" placeholders, 404 and the status page,
+ *   - video facades written into Markdown bodies.
+ * Selectors use child combinators so theme blocks rendered inside these views keep their own classes.
+ * Imported by src/layouts/MainLayout.astro. Wireframe, placeholder and status rules go at go-live.
+ */
+@reference '../../assets/styles/global.css';
+
+/* Title above a blocks page without a hero (EntryView renders a bare <h1>) */
+#main-content > h1 {
+  @apply mx-auto max-w-[85rem] px-4 pt-10 text-4xl font-extrabold tracking-tight text-balance text-neutral-800 sm:px-6 lg:px-8 lg:pt-14 2xl:max-w-full;
+}
+
+/* Kit default blocks: the theme's section container and heading */
+#main-content
+  > :is(.kit-hero, .kit-text, .kit-image-text, .kit-cards, .kit-gallery, .kit-video, .kit-map, .kit-contact) {
+  @apply mx-auto max-w-[85rem] px-4 py-10 text-neutral-700 sm:px-6 lg:px-8 lg:py-14 2xl:max-w-full;
+}
+#main-content > :is(.kit-text, .kit-image-text, .kit-cards, .kit-gallery, .kit-map, .kit-contact) h2 {
+  @apply mb-6 text-2xl font-bold tracking-tight text-balance text-neutral-800 md:text-4xl md:leading-tight;
+}
+#main-content > .kit-video > div {
+  @apply max-w-4xl;
+}
+#main-content > .kit-video figcaption,
+#main-content > .kit-gallery figcaption {
+  @apply mt-2 text-sm text-neutral-600;
+}
+#main-content > .kit-video a,
+#main-content > .kit-map a {
+  @apply font-medium text-neutral-800 underline underline-offset-2 hover:text-neutral-600;
+}
+#main-content > .kit-map .address {
+  @apply mb-3;
+}
+
+/* Draft layout (wireframe): readable plain content, clear of the floating header */
+#main-content > .kit-wireframe {
+  @apply pt-8;
+}
+.kit-wireframe > h1 {
+  @apply mb-6 text-3xl font-extrabold tracking-tight text-balance text-neutral-800 md:text-4xl;
+}
+.kit-wireframe > h2 {
+  @apply mt-10 mb-3 text-2xl font-bold text-neutral-800;
+}
+.kit-wireframe > :is(h3, h4, h5, h6) {
+  @apply mt-8 mb-2 text-lg font-bold text-neutral-800;
+}
+.kit-wireframe > :is(p, ul, ol, blockquote, table, figure, pre) {
+  @apply mb-4 text-neutral-700;
+}
+.kit-wireframe > ul {
+  @apply list-disc ps-6;
+}
+.kit-wireframe > ol {
+  @apply list-decimal ps-6;
+}
+.kit-wireframe > blockquote {
+  @apply border-s-4 border-neutral-400 ps-4 italic;
+}
+.kit-wireframe > :is(p, ul, ol, blockquote, table) a {
+  @apply text-neutral-900 underline underline-offset-2;
+}
+.kit-wireframe > table :is(th, td) {
+  @apply border border-neutral-400 px-2 py-1 text-start;
+}
+
+/* "Not moved yet" placeholders, 404, status page (the sticky header overlaps the top of <main>) */
+#main-content > .kit-status {
+  @apply pt-12 pb-16;
+}
+:is(.kit-pending, .kit-not-found, .kit-status) h1 {
+  @apply mb-4 text-3xl font-extrabold tracking-tight text-balance text-neutral-800 md:text-4xl;
+}
+:is(.kit-pending, .kit-not-found) > p {
+  @apply mb-3 text-neutral-700;
+}
+:is(.kit-pending, .kit-not-found, .kit-status) a {
+  @apply font-medium text-neutral-900 underline underline-offset-2 hover:text-neutral-600;
+}
+.kit-status summary {
+  @apply text-lg text-neutral-800;
+}
+.kit-status li {
+  @apply py-1;
+}
+
+/* Video facade in a Markdown body (the video block styles its own) */
+:is(.prose, .kit-wireframe) > [data-kit-video] > button {
+  @apply my-4 rounded-lg bg-neutral-800 px-4 py-3 text-sm font-bold text-neutral-50 hover:bg-neutral-700;
+}

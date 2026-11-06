@@ -1,0 +1,37 @@
+---
+// Progress overview for the owner, at /migration-status/ in the preview. Reads the page plan
+// written by plan.mjs (.migration/plan.json). Run `plan.mjs update` before building to refresh it.
+// Remove at go-live (and exclude it from the sitemap meanwhile).
+import Base from '../layouts/Base.astro';
+import plan from '../../.migration/plan.json';
+
+const LABEL: Record<string, string> = {
+  todo: 'not started', extracted: 'content moved', wireframe: 'draft layout', styled: 'designed',
+  compared: 'designed + compared', approved: 'approved', issue: 'needs attention', skipped: 'left out',
+};
+const groups = Object.entries(
+  plan.pages.reduce((acc: Record<string, any[]>, p: any) => ((acc[p.group] ??= []).push(p), acc), {}),
+).sort((a, b) => b[1].length - a[1].length);
+const done = plan.pages.filter((p: any) => ['styled', 'compared', 'approved'].includes(p.status)).length;
+---
+
+<Base title="Migration status">
+  <section data-migration="pending" data-pagefind-ignore="all" class="mx-auto max-w-4xl px-6 pt-36 pb-16">
+    <h1 class="text-3xl font-semibold">Migration status</h1>
+    <p class="mt-3 opacity-80">{done} of {plan.pages.length} pages designed · updated {plan.updatedAt.slice(0, 10)}</p>
+    {groups.map(([group, pages]) => (
+      <details class="mt-8" open={pages.length <= 12}>
+        <summary class="cursor-pointer text-lg font-semibold">{group} ({pages.length})</summary>
+        <ul class="mt-3 space-y-1">
+          {pages.map((p: any) => (
+            <li class="flex flex-wrap gap-x-3">
+              <span class="w-48 shrink-0 text-sm opacity-70">{LABEL[p.status] ?? p.status}</span>
+              <a href={p.path} class="underline">{p.title ?? p.path}</a>
+              {p.note && <span class="text-sm opacity-70">— {p.note}</span>}
+            </li>
+          ))}
+        </ul>
+      </details>
+    ))}
+  </section>
+</Base>

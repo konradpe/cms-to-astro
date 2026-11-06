@@ -1,0 +1,26 @@
+---
+/**
+ * Renders a page's `blocks` in order, one component per `type` from the registry in theme/index.ts.
+ * Each component gets the block's fields plus `locale` and `index` (0 = first block, e.g. hero <h1>).
+ * Unknown types are skipped with a build warning.
+ */
+import { blocks as registry } from './theme';
+import type { Block } from './schema';
+
+interface Props {
+  blocks: Block[];
+  locale: string;
+}
+
+const { blocks, locale } = Astro.props;
+for (const block of blocks) {
+  if (!registry[block.type]) console.warn(`[migration] no component for block type "${block.type}" (theme/index.ts blocks)`);
+}
+---
+
+{
+  blocks.map((block, index) => {
+    const Component = registry[block.type];
+    return Component ? <Component {...block} locale={locale} index={index} /> : null;
+  })
+}

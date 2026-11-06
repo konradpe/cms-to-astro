@@ -1,0 +1,18 @@
+---
+// Template for pages that haven't been moved yet. The pending-pages integration copies the built
+// HTML of this page to every linked path that doesn't exist yet, replacing __OLD_URL__ and __PATH__.
+// Keep it in the site's layout so the preview feels like the real site. Delete at go-live.
+// Adjust the layout import and classes to this project.
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Not moved yet">
+  <section data-migration="pending" data-pagefind-ignore="all" class="mx-auto max-w-3xl px-6 pt-40 pb-32 text-center">
+    <p class="text-xs font-semibold tracking-[0.2em] uppercase opacity-60">Preview of the new website</p>
+    <h1 class="mt-4 text-3xl font-light">This page hasn't been moved yet</h1>
+    <p class="mt-6 opacity-80">It will appear here once it has been moved to the new site.</p>
+    <p class="mt-8">
+      <a href="__OLD_URL__" target="_blank" rel="noopener" class="underline underline-offset-4">Open __PATH__ on the current website ↗</a>
+    </p>
+  </section>
+</Base>

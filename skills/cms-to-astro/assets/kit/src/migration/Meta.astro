@@ -1,0 +1,25 @@
+---
+/**
+ * SEO tags of a page: title, description, canonical, hreflang (+ x-default), robots, Open Graph.
+ * No charset/viewport/favicons: those belong to the Shell (the theme's head). When a theme's own
+ * SEO component renders some of these tags too, keep one of each (see KIT.md, Shell).
+ */
+import type { PageMeta } from './meta';
+
+interface Props {
+  meta: PageMeta;
+}
+
+const { meta } = Astro.props;
+---
+
+<title>{meta.title}</title>
+{meta.description && <meta name="description" content={meta.description} />}
+{meta.noindex && <meta name="robots" content="noindex" />}
+{meta.canonical && <link rel="canonical" href={meta.canonical} />}
+{meta.alternates.map((alt) => <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />)}
+<meta property="og:type" content="website" />
+<meta property="og:title" content={meta.heading} />
+{meta.description && <meta property="og:description" content={meta.description} />}
+{meta.canonical && <meta property="og:url" content={meta.canonical} />}
+{meta.image && <meta property="og:image" content={meta.image} />}

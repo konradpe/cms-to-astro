@@ -1,0 +1,44 @@
+---
+/** image-text: { heading?, text, image, alt?, imageSide?: 'left' | 'right' (default right) }. */
+import { markdown } from '../markdown';
+
+interface Props {
+  heading?: string;
+  text?: string;
+  image?: string;
+  alt?: string;
+  imageSide?: 'left' | 'right';
+}
+
+const { heading, text, image, alt = '', imageSide = 'right' } = Astro.props;
+---
+
+<section class="kit-image-text" class:list={[imageSide === 'left' && 'image-left']}>
+  <div>
+    {heading && <h2>{heading}</h2>}
+    <div set:html={markdown(text)} />
+  </div>
+  {image && <img src={image} alt={alt} loading="lazy" decoding="async" />}
+</section>
+
+<style>
+  .kit-image-text {
+    display: grid;
+    gap: var(--kit-gap, 1.5rem);
+    align-items: center;
+    margin-block: 0 2.5rem;
+  }
+  @media (min-width: 48rem) {
+    .kit-image-text {
+      grid-template-columns: 1fr 1fr;
+    }
+    .image-left img {
+      order: -1;
+    }
+  }
+  img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--kit-radius, 0.5rem);
+  }
+</style>

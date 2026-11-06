@@ -1,0 +1,32 @@
+---
+/**
+ * image-text block in the theme's AlternatingSections style (src/components/ui/blocks/AlternatingSections.astro):
+ * big heading and text next to a rounded image. Fields: { heading?, text, image, alt?, imageSide?: left | right }.
+ * Not the theme component itself: that one takes imported images and plain text.
+ */
+import { markdown } from '../../markdown';
+
+interface Props {
+  heading?: string;
+  text?: string;
+  image?: string;
+  alt?: string;
+  imageSide?: 'left' | 'right';
+}
+
+const { heading, text, image, alt = '', imageSide = 'right' } = Astro.props;
+---
+
+<section class="mx-auto max-w-[85rem] items-center gap-16 px-4 py-10 sm:px-6 lg:grid lg:grid-cols-2 lg:px-8 lg:py-14 2xl:max-w-full">
+  <div class:list={[imageSide === 'left' && 'lg:order-2']}>
+    {heading && <h2 class="mb-4 text-4xl font-extrabold tracking-tight text-balance text-neutral-800">{heading}</h2>}
+    <div class="prose prose-neutral max-w-prose text-pretty sm:prose-lg" set:html={markdown(text)} />
+  </div>
+  {
+    image && (
+      <div class:list={['mt-8 lg:mt-0', imageSide === 'left' && 'lg:order-1']}>
+        <img class="w-full rounded-xl" src={image} alt={alt} loading="lazy" decoding="async" />
+      </div>
+    )
+  }
+</section>

@@ -1,0 +1,14 @@
+---
+/**
+ * Override of Starlight's PageTitle (astro.config.mjs `components`): one <h1> per page. Starlight's
+ * title is left out where the page brings its own: the kit's placeholder, 404 and status pages, and
+ * converted Markdown that still starts with "# Heading" (remove that line when reviewing the page).
+ * The anchor keeps Starlight's skip link and "Overview" link (#_top) working.
+ */
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+
+const { body } = Astro.locals.starlightRoute.entry;
+const ownHeading = Astro.locals.migration?.ownHeading || /^\s*#\s/.test(body ?? '');
+---
+
+{ownHeading ? <span id="_top"></span> : <Default />}

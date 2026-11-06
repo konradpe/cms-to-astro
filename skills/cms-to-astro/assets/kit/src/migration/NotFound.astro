@@ -1,0 +1,39 @@
+---
+/** The 404 page of one language (src/pages/404.astro, src/pages/[...locale]/404.astro). */
+import { Shell } from './theme';
+import { buildMeta } from './meta';
+import { t } from './strings';
+import { homeOf } from './urls';
+
+interface Props {
+  locale: string;
+}
+
+const { locale } = Astro.props;
+const s = t(locale);
+const meta = buildMeta({ title: s.notFoundTitle, locale, noindex: true });
+---
+
+<Shell meta={meta}>
+  <section class="kit-not-found">
+    <p class="code">404</p>
+    <h1>{s.notFoundTitle}</h1>
+    <p>{s.notFoundText}</p>
+    <p><a href={homeOf(locale)}>{s.notFoundHome}</a></p>
+  </section>
+</Shell>
+
+<style>
+  .kit-not-found {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding-block: 3rem;
+    text-align: center;
+  }
+  .code {
+    font-size: 4rem;
+    font-weight: 800;
+    margin: 0;
+    opacity: 0.3;
+  }
+</style>

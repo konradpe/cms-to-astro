@@ -1,0 +1,65 @@
+---
+/**
+ * Kit Shell (integration point 1) on AstroWind: the theme's Layout (self-hosted font, colour tokens,
+ * favicons) with its Header and Footer, fed per language from src/navigation.ts. Head tags (title,
+ * description, canonical, hreflang, robots, Open Graph) come from the kit's <Meta>; the adapter took
+ * the theme's own out of Layout.astro. Other languages appear as small links at the end of the header.
+ */
+import Layout from '~/layouts/Layout.astro';
+import Header from '~/components/widgets/Header.astro';
+import Footer from '~/components/widgets/Footer.astro';
+import { navigationFor, type NavLink } from '~/navigation';
+import Meta from '../Meta.astro';
+import type { PageMeta } from '../meta';
+import { site } from '../site.config';
+import { t } from '../strings';
+import { homeOf } from '../urls';
+import { esc } from './aw';
+import './kit.css';
+
+interface Props {
+  meta: PageMeta;
+}
+
+const { meta } = Astro.props;
+const s = t(meta.locale);
+const nav = navigationFor(meta.locale);
+const home = homeOf(meta.locale);
+const languageName = (lang: string) => {
+  try {
+    return new Intl.DisplayNames([lang], { type: 'language' }).of(lang) ?? lang;
+  } catch {
+    return lang;
+  }
+};
+// Header buttons render their text as HTML: escape it.
+const actions = [
+  ...(nav.actions ?? []).map((a) => ({ ...a, text: esc(a.text) })),
+  ...meta.languages
+    .filter((l) => !l.current && meta.languages.length > 1)
+    .map((l) => ({ text: l.locale.toUpperCase(), href: l.href, hreflang: l.lang, lang: l.lang, title: languageName(l.lang), variant: 'tertiary' as const })),
+];
+// Footer link texts are HTML too; column titles are plain text.
+const escLinks = (links: NavLink[]) => links.map((l) => ({ ...l, text: esc(l.text) }));
+---
+
+<Layout lang={meta.lang}>
+  <Meta slot="head" meta={meta} />
+  <a
+    href="#main"
+    class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-page focus:px-4 focus:py-2"
+    >{s.skipToContent}</a
+  >
+  <Header links={nav.header} actions={actions} homeHref={home} isSticky />
+  <main id="main" class="flex-1" data-pagefind-body>
+    <slot />
+  </main>
+  <Footer
+    links={nav.footer.map((c) => ({ title: c.title, links: escLinks(c.links) }))}
+    secondaryLinks={escLinks(nav.legal)}
+    socialLinks={nav.social ?? []}
+    footNote={nav.footNote ?? ''}
+    homeHref={home}
+    siteName={site.name}
+  />
+</Layout>

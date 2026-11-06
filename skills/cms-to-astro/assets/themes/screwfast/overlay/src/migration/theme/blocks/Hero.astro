@@ -1,0 +1,57 @@
+---
+/**
+ * hero block in the theme's HeroSection style (src/components/sections/landing/HeroSection.astro):
+ * large heading, text, buttons (theme PrimaryCTA / SecondaryCTA), image on the right.
+ * Fields: { heading, text?, image?, alt?, actions?: [{ label, href }] }. <h1> when it is the first block.
+ * Not the theme component itself: that one always renders <h1>, takes plain text and needs imported images.
+ */
+import PrimaryCTA from '@components/ui/buttons/PrimaryCTA.astro';
+import SecondaryCTA from '@components/ui/buttons/SecondaryCTA.astro';
+import { markdown } from '../../markdown';
+
+interface Props {
+  heading: string;
+  text?: string;
+  image?: string;
+  alt?: string;
+  actions?: { label: string; href: string }[];
+  index?: number;
+}
+
+const { heading, text, image, alt = '', actions = [], index = 0 } = Astro.props;
+const Heading = index === 0 ? 'h1' : 'h2';
+const [first, ...rest] = actions;
+---
+
+<section
+  class:list={[
+    'mx-auto grid max-w-[85rem] gap-4 px-4 py-14 sm:px-6 lg:px-8 2xl:max-w-full',
+    image && 'md:grid-cols-2 md:items-center md:gap-8',
+  ]}
+>
+  <div class:list={[!image && 'max-w-3xl']}>
+    <Heading class="block text-3xl font-bold tracking-tight text-balance text-neutral-800 sm:text-4xl lg:text-6xl lg:leading-tight">
+      {heading}
+    </Heading>
+    {text && <div class="prose prose-lg prose-neutral mt-3 text-pretty text-neutral-700 lg:w-4/5" set:html={markdown(text)} />}
+    {
+      first && (
+        <div class="mt-7 grid w-full gap-3 sm:inline-flex sm:w-auto">
+          <PrimaryCTA title={first.label} url={first.href} />
+          {rest.map((a) => (
+            <SecondaryCTA title={a.label} url={a.href} />
+          ))}
+        </div>
+      )
+    }
+  </div>
+  {
+    image && (
+      <div class="flex w-full">
+        <div class="aspect-[4067/2576] w-full overflow-hidden rounded-xl">
+          <img src={image} alt={alt} class="h-full w-full object-cover object-center" loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />
+        </div>
+      </div>
+    )
+  }
+</section>

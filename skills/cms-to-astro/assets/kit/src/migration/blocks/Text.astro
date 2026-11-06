@@ -1,0 +1,23 @@
+---
+/** text: { heading?, text } (text in Markdown, see markdown.ts). */
+import { markdown } from '../markdown';
+
+interface Props {
+  heading?: string;
+  text?: string;
+}
+
+const { heading, text } = Astro.props;
+---
+
+<section class="kit-text">
+  {heading && <h2>{heading}</h2>}
+  <div set:html={markdown(text)} />
+</section>
+
+<style>
+  .kit-text {
+    max-width: 46rem;
+    margin-block: 0 2.5rem;
+  }
+</style>

@@ -1,0 +1,28 @@
+---
+/**
+ * A docs page at one of its `aliases` (further old paths of the same page): the same content in
+ * Starlight's frame, canonical link to the main URL, no hreflang, not in the sitemap or the search.
+ * At go-live, turn aliases into host redirects where the host supports them (kit KIT.md, Go-live).
+ */
+import { render } from 'astro:content';
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { metaOf, titleOf, type DocsEntry } from './docs';
+
+interface Props {
+  entry: DocsEntry;
+  /** The alias href being built. */
+  path: string;
+}
+
+const { entry, path } = Astro.props;
+const { Content, headings } = await render(entry);
+Astro.locals.migration = { meta: await metaOf(entry, path) };
+const { description, template, tableOfContents, wireframe, oldUrl } = entry.data;
+---
+
+<StarlightPage
+  frontmatter={{ title: titleOf(entry), description, template, tableOfContents, wireframe, oldUrl, pagefind: false, editUrl: false }}
+  headings={headings}
+>
+  <Content />
+</StarlightPage>

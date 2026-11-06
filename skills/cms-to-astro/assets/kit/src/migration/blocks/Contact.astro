@@ -1,0 +1,61 @@
+---
+/**
+ * contact: { heading?, name?, address?, phone?, email?, hours?, text? }. Plain contact details
+ * (forms need a form service; see the skill's incompatibilities reference).
+ */
+import { markdown } from '../markdown';
+import { t } from '../strings';
+
+interface Props {
+  heading?: string;
+  name?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  hours?: string;
+  text?: string;
+  locale?: string;
+}
+
+const { heading, name, address, phone, email, hours, text, locale = 'en' } = Astro.props;
+const s = t(locale);
+const tel = phone?.replace(/[^\d+]/g, '');
+---
+
+<section class="kit-contact">
+  {heading && <h2>{heading}</h2>}
+  {text && <div set:html={markdown(text)} />}
+  <address>
+    {name && <strong>{name}</strong>}
+    {address && <span class="lines">{address}</span>}
+    {
+      phone && (
+        <span>
+          {s.phone}: <a href={`tel:${tel}`}>{phone}</a>
+        </span>
+      )
+    }
+    {
+      email && (
+        <span>
+          {s.email}: <a href={`mailto:${email}`}>{email}</a>
+        </span>
+      )
+    }
+    {hours && <span class="lines">{hours}</span>}
+  </address>
+</section>
+
+<style>
+  .kit-contact {
+    margin-block: 0 2.5rem;
+  }
+  address {
+    display: grid;
+    gap: 0.25rem;
+    font-style: normal;
+  }
+  .lines {
+    white-space: pre-line;
+  }
+</style>

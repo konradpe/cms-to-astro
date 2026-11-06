@@ -1,0 +1,28 @@
+---
+/**
+ * gallery → AstroWind Gallery (grid with the theme's <dialog> lightbox, no library). `full` links the
+ * caption to the large version. Fields: heading?, items: [{ src, alt?, caption?, full? }].
+ */
+import GalleryWidget from '~/components/widgets/Gallery.astro';
+import { esc } from '../aw';
+
+interface Item {
+  src: string;
+  alt?: string;
+  caption?: string;
+  full?: string;
+}
+interface Props {
+  heading?: string;
+  items?: Item[];
+}
+
+const { heading, items = [] } = Astro.props;
+const columns = items.length === 2 || items.length === 4 ? (items.length as 2 | 4) : 3;
+---
+
+<GalleryWidget
+  title={heading ? esc(heading) : undefined}
+  columns={columns}
+  images={items.map((i) => ({ src: i.src, alt: i.alt ?? '', caption: i.caption, href: i.full }))}
+/>

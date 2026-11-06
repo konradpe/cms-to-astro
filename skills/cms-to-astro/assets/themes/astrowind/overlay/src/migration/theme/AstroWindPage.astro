@@ -1,0 +1,38 @@
+---
+/**
+ * Kit page template `page` (integration point 2) in AstroWind's Markdown typography (the theme's
+ * MarkdownLayout): title, the date of dated entries outside `pages` (news), the body as prose.
+ * Further templates: add a component here and register it in index.ts `templates`.
+ */
+import type { MigrationEntry } from '../content';
+import type { PageMeta } from '../meta';
+import { PROSE } from './aw';
+
+interface Props {
+  entry: MigrationEntry;
+  meta: PageMeta;
+  /** The visible <h1>; false when the body starts with its own "# Heading" or blocks come first. */
+  heading: string | false;
+}
+
+const { entry, meta, heading } = Astro.props;
+const date = entry.collection !== 'pages' ? entry.data.date : undefined;
+---
+
+<section class="px-4 py-16 sm:px-6 mx-auto lg:px-8 lg:py-20 max-w-4xl">
+  {
+    (heading || date) && (
+      <header class="mb-8">
+        {heading && <h1 class="font-bold font-heading text-4xl md:text-5xl leading-tighter tracking-tighter text-heading">{heading}</h1>}
+        {date && (
+          <p class="mt-4 text-muted">
+            <time datetime={date.toISOString().slice(0, 10)}>{date.toLocaleDateString(meta.lang, { dateStyle: 'long' })}</time>
+          </p>
+        )}
+      </header>
+    )
+  }
+  <div class:list={['mx-auto', PROSE, 'prose-img:shadow-lg']}>
+    <slot />
+  </div>
+</section>

@@ -1,0 +1,40 @@
+---
+/** Renders one path of the catch-all routes (content.ts staticPaths): an entry, a pending home, the root redirect. */
+import EntryView from './EntryView.astro';
+import PendingNotice from './PendingNotice.astro';
+import { Shell } from './theme';
+import type { RouteProps } from './content';
+import { buildMeta } from './meta';
+import { site } from './site.config';
+import { t } from './strings';
+import { DEFAULT_LOCALE, homeOf } from './urls';
+
+type Props = RouteProps;
+const props = Astro.props;
+const pendingMeta = props.kind === 'home' ? buildMeta({ title: t(props.locale).pendingTitle, locale: props.locale, noindex: true }) : undefined;
+const target = homeOf(DEFAULT_LOCALE);
+---
+
+{props.kind === 'entry' && <EntryView entry={props.entry} path={props.path} />}
+{
+  props.kind === 'home' && (
+    <Shell meta={pendingMeta!}>
+      <PendingNotice locale={props.locale} oldUrl={new URL(props.path, site.oldOrigin).href} path={props.path} />
+    </Shell>
+  )
+}
+{
+  props.kind === 'root' && (
+    <html lang={DEFAULT_LOCALE}>
+      <head>
+        <meta charset="utf-8" />
+        <title>{site.name}</title>
+        <meta name="robots" content="noindex" />
+        <meta http-equiv="refresh" content={`0; url=${target}`} />
+      </head>
+      <body>
+        <a href={target}>{site.name}</a>
+      </body>
+    </html>
+  )
+}

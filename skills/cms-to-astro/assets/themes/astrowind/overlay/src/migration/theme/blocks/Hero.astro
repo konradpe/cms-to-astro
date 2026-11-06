@@ -1,0 +1,47 @@
+---
+/**
+ * hero → AstroWind Hero when it is the first block (its <h1>); a later hero has no <h1>: with an
+ * image it becomes AstroWind Content, without one a CallToAction box.
+ * Fields: heading, text?, image?, alt?, actions?: [{ label, href }] (the first is the primary button).
+ */
+import HeroWidget from '~/components/widgets/Hero.astro';
+import Content from '~/components/widgets/Content.astro';
+import CallToAction from '~/components/widgets/CallToAction.astro';
+import { esc, inlineMd, richText } from '../aw';
+
+interface Props {
+  heading: string;
+  text?: string;
+  image?: string;
+  alt?: string;
+  actions?: { label: string; href: string }[];
+  index?: number;
+}
+
+const { heading, text, image, alt = '', actions = [], index = 0 } = Astro.props;
+const subtitle = inlineMd(text);
+// Lists or headings in the text can't sit in the subtitle <p>: the first hero renders them below it.
+const content = text && !subtitle ? `<div class="mx-auto max-w-3xl text-left text-lg text-muted">${richText(text)}</div>` : undefined;
+const buttons = actions.map((a, i) => ({ text: esc(a.label), href: a.href, variant: i === 0 ? ('primary' as const) : ('secondary' as const) }));
+---
+
+{
+  index === 0 ? (
+    <HeroWidget
+      title={esc(heading)}
+      subtitle={subtitle}
+      content={content}
+      actions={buttons.length ? buttons : undefined}
+      image={image ? { src: image, alt } : undefined}
+    />
+  ) : image ? (
+    <Content
+      title={esc(heading)}
+      content={richText(text)}
+      image={{ src: image, alt, aspect: '4/3' }}
+      callToAction={buttons[0] ? { ...buttons[0], variant: 'link' } : undefined}
+    />
+  ) : (
+    <CallToAction title={esc(heading)} subtitle={subtitle ?? (text ? esc(text) : undefined)} actions={buttons.length ? buttons : undefined} />
+  )
+}

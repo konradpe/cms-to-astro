@@ -1,0 +1,7 @@
+---
+/** 404 page of the default language (404.html; hosts serve it for every unknown path). */
+import NotFound from '../migration/NotFound.astro';
+import { DEFAULT_LOCALE } from '../migration/urls';
+---
+
+<NotFound locale={DEFAULT_LOCALE} />

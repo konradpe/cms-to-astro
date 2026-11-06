@@ -1,0 +1,26 @@
+---
+// Layout for pages whose content is already moved but whose page type has no styled template yet
+// ("wireframe: true" in the frontmatter). Site frame (header, footer) as usual, content unstyled,
+// with a visible note so nobody mistakes it for the final design. Remove at go-live.
+// Adjust the Base import and classes to this project. If the header overlays the content (transparent
+// or absolutely positioned header), increase the top padding so the note isn't hidden behind it.
+import Base from './Base.astro';
+
+interface Props {
+  title: string;
+  oldUrl?: string;
+}
+const { title, oldUrl } = Astro.props;
+---
+
+<Base title={title}>
+  <div data-migration="wireframe" class="mx-auto max-w-3xl px-6 pt-36 pb-16">
+    <p data-pagefind-ignore class="mb-10 rounded border border-dashed border-current px-4 py-3 text-sm opacity-70">
+      Draft layout: the content of this page has been moved, the final design follows.{oldUrl && (<> Current version: <a href={oldUrl} data-old-site target="_blank" rel="noopener" class="underline">on the old website ↗</a></>)}
+    </p>
+    <h1 class="mb-6 text-3xl font-semibold">{title}</h1>
+    <div class="prose max-w-none">
+      <slot />
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,27 @@
+---
+/**
+ * Placeholder templates, one per language: /migration-pending/ (default language) and
+ * /migration-pending/<prefix>/ for the other prefixes. After the build, integrations/pending-pages.mjs
+ * copies the template of the link's language to every linked path that doesn't exist yet
+ * (replacing __OLD_URL__ and __PATH__) and deletes the templates. Delete at go-live.
+ */
+import { Shell } from '../../migration/theme';
+import PendingNotice from '../../migration/PendingNotice.astro';
+import { buildMeta } from '../../migration/meta';
+import { t } from '../../migration/strings';
+import { DEFAULT_LOCALE, LOCALES, prefixOf } from '../../migration/urls';
+
+export function getStaticPaths() {
+  return [
+    { params: { locale: undefined }, props: { locale: DEFAULT_LOCALE } },
+    ...LOCALES.filter((l) => prefixOf(l)).map((locale) => ({ params: { locale: prefixOf(locale) }, props: { locale } })),
+  ];
+}
+
+const { locale } = Astro.props;
+const meta = buildMeta({ title: t(locale).pendingTitle, locale, noindex: true });
+---
+
+<Shell meta={meta}>
+  <PendingNotice locale={locale} oldUrl="__OLD_URL__" path="__PATH__" />
+</Shell>

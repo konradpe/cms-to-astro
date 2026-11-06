@@ -1,0 +1,33 @@
+---
+/**
+ * Shell (kit integration point 1, theme/index.ts) for the Starlight recipe: the kit's own pages
+ * (placeholders, 404 per language, status page) in Starlight's frame through <StarlightPage>, with
+ * header, search, sidebar of the page's language and the theme's CSS. The head comes from `meta`
+ * (route-data.ts reads locals.migration): no canonical or hreflang on these pages, robots noindex,
+ * <html lang> of the page's language. Kit pages bring their own <h1> (PageTitle.astro skips
+ * Starlight's) and stay out of the search index.
+ *
+ * Docs pages don't use this Shell: Starlight renders them (src/content/docs, route-data.ts).
+ */
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import type { PageMeta } from '../meta';
+
+interface Props {
+  meta: PageMeta;
+}
+
+const { meta } = Astro.props;
+Astro.locals.migration = { meta, ownHeading: true };
+---
+
+<StarlightPage
+  frontmatter={{
+    title: meta.heading,
+    description: meta.description,
+    pagefind: false,
+    tableOfContents: false,
+    editUrl: false,
+  }}
+>
+  <slot />
+</StarlightPage>

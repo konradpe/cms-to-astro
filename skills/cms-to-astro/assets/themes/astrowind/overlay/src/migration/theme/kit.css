@@ -1,0 +1,39 @@
+/*
+ * Markup the kit renders itself, inside the AstroWind shell: the draft layout (.kit-wireframe), the
+ * "not moved yet" notice (.kit-pending), the 404 (.kit-not-found), the status page (.kit-status), the
+ * video facade in Markdown bodies ([data-kit-video]) and, on block pages that don't start with a hero,
+ * a bare <h1> as main's first child. Tailwind's preflight strips their headings, lists, links and
+ * buttons; these rules give them the theme's container and typography.
+ * Plain (unlayered) CSS: it wins over Tailwind utilities, so it targets kit markup only.
+ */
+@reference "../../assets/styles/tailwind.css";
+
+main > h1 {
+  @apply mx-auto max-w-4xl px-4 pt-12 font-heading text-4xl font-bold tracking-tighter text-heading md:px-6 md:pt-16 md:text-5xl;
+}
+
+.kit-wireframe,
+.kit-pending,
+.kit-not-found,
+.kit-status {
+  @apply prose prose-lg px-4 dark:prose-invert prose-headings:font-heading prose-headings:tracking-tighter prose-a:text-primary;
+}
+
+.kit-pending,
+.kit-not-found {
+  @apply py-16 md:py-24;
+}
+
+.kit-status {
+  @apply py-12;
+}
+
+/* Click-to-load video inside a Markdown body (the kit's facade markup, see KIT.md). */
+[data-kit-video] button {
+  @apply flex aspect-video w-full cursor-pointer items-center justify-center rounded-lg bg-slate-900 p-6 text-center text-base text-white hover:bg-slate-800;
+}
+
+/* Blocks below a draft's content: AstroWind's hero pulls itself under the header; not here. */
+.kit-wireframe section {
+  margin-top: 0;
+}

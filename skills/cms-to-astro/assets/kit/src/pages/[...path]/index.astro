@@ -1,0 +1,9 @@
+---
+/** Directory indexes (/, /en/, /about/) of the catch-all; see ../[...path].astro. */
+import Route from '../../migration/Route.astro';
+import { staticPaths } from '../../migration/content';
+
+export const getStaticPaths = () => staticPaths(true);
+---
+
+<Route {...Astro.props} />

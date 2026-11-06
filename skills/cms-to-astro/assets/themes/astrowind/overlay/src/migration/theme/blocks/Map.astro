@@ -1,0 +1,29 @@
+---
+/**
+ * map → the kit's block (a link to OpenStreetMap, optional local map image; no embed, no request to a
+ * map provider) in an AstroWind-style section with the theme's prose. AstroWind has no map widget.
+ * Fields: heading?, address?, lat?, lng?, href?, image?, alt?.
+ */
+import Section from '../Section.astro';
+import KitMap from '../../blocks/Map.astro';
+import { PROSE } from '../aw';
+
+interface Props {
+  heading?: string;
+  address?: string;
+  lat?: number;
+  lng?: number;
+  href?: string;
+  image?: string;
+  alt?: string;
+  locale?: string;
+}
+
+const { heading, ...map } = Astro.props;
+---
+
+<Section heading={heading}>
+  <div class={PROSE}>
+    <KitMap {...map} />
+  </div>
+</Section>

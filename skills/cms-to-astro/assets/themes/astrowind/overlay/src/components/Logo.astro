@@ -1,0 +1,14 @@
+---
+/**
+ * The logo in the header (cms-to-astro recipe): the site name from src/migration/site.config.ts.
+ * For the owner's logo, save it as src/assets/logo.svg and use it as a component:
+ *   import LogoMark from '~/assets/logo.svg';
+ *   <LogoMark class="h-8 w-auto" role="img" aria-label={site.name} />
+ * (a raster logo: import it from src/assets and render it with <Image> from astro:assets).
+ */
+import { site } from '~/migration/site.config';
+---
+
+<span class="self-center ml-2 rtl:ml-0 rtl:mr-2 text-2xl md:text-xl font-bold text-gray-900 whitespace-nowrap dark:text-white">
+  {site.name}
+</span>

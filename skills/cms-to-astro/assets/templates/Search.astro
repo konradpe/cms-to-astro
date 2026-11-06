@@ -1,0 +1,117 @@
+---
+// Site search with Pagefind: the index is built from the finished pages after `astro build`
+// (package.json: "postbuild": "pagefind --site dist"), so it works for any former CMS, needs no
+// server and no account, and handles languages by the pages' <html lang>.
+//
+// What gets indexed: only elements marked data-pagefind-body (put it on <main> in the layout);
+// placeholders and the status page carry data-pagefind-ignore. Optional per-template filters:
+// <span data-pagefind-filter="type" hidden>Projects</span>.
+//
+// Usage: <Search /> in the header. Style the trigger to match the old site's search icon/field.
+// In `astro dev` there is no index yet; the dialog says so. Check with `npm run build && npm run preview`.
+// The icon is a file (copy assets/templates/icons/search.svg to src/assets/icons/), imported, not inline markup.
+import SearchIcon from '../assets/icons/search.svg';
+
+interface Props {
+  label?: string; // accessible label and dialog heading
+  placeholder?: string;
+  noResults?: string;
+  devHint?: string;
+}
+const {
+  label = 'Search',
+  placeholder = 'Search this website…',
+  noResults = 'No results.',
+  devHint = 'The search index is created by the production build (npm run build).',
+} = Astro.props;
+---
+
+<site-search data-no-results={noResults} data-dev-hint={devHint}>
+  <button type="button" data-open aria-label={label} class="inline-flex h-10 w-10 items-center justify-center">
+    <slot name="trigger">
+      <SearchIcon width="20" height="20" aria-hidden="true" />
+    </slot>
+  </button>
+  <dialog data-dialog aria-label={label} class="m-auto w-[min(40rem,92vw)] rounded-lg p-0 shadow-2xl backdrop:bg-black/50">
+    <form method="dialog" class="flex items-center gap-2 border-b border-black/10 p-3">
+      <label class="sr-only" for="site-search-input">{label}</label>
+      <input id="site-search-input" data-input type="search" autocomplete="off" placeholder={placeholder} class="min-w-0 flex-1 bg-transparent px-2 py-2 text-lg outline-none [&::-webkit-search-cancel-button]:hidden" />
+      <button value="close" aria-label="Close" class="h-10 w-10 text-xl leading-none opacity-60 hover:opacity-100">×</button>
+    </form>
+    <p data-status class="px-5 pt-3 text-sm opacity-70" aria-live="polite"></p>
+    <ol data-results class="max-h-[60vh] overflow-y-auto px-5 pb-5"></ol>
+  </dialog>
+</site-search>
+
+<script>
+  class SiteSearch extends HTMLElement {
+    pagefind: any = null;
+    timer: number | undefined;
+
+    connectedCallback() {
+      const dialog = this.querySelector<HTMLDialogElement>('[data-dialog]')!;
+      const input = this.querySelector<HTMLInputElement>('[data-input]')!;
+      this.querySelector('[data-open]')!.addEventListener('click', () => {
+        dialog.showModal();
+        input.focus();
+        this.load();
+      });
+      input.addEventListener('input', () => {
+        clearTimeout(this.timer);
+        this.timer = window.setTimeout(() => this.search(input.value), 200);
+      });
+      // Old search URLs keep working: /?s=term (WordPress), ?q=, ?search=, ?keys= (Drupal) open the
+      // search with the term. Put <Search /> on every page (header) so any old search link lands here.
+      const params = new URLSearchParams(location.search);
+      const term = params.get('s') ?? params.get('q') ?? params.get('search') ?? params.get('keys');
+      if (term) {
+        dialog.showModal();
+        input.value = term;
+        this.search(term);
+      }
+    }
+
+    async load() {
+      if (this.pagefind) return this.pagefind;
+      try {
+        const url = '/pagefind/pagefind.js';
+        this.pagefind = await import(/* @vite-ignore */ url);
+        await this.pagefind.init();
+      } catch {
+        this.status(this.dataset.devHint ?? '');
+      }
+      return this.pagefind;
+    }
+
+    status(text: string) {
+      this.querySelector('[data-status]')!.textContent = text;
+    }
+
+    async search(term: string) {
+      const list = this.querySelector('[data-results]')!;
+      const pf = await this.load();
+      if (!pf) return;
+      if (!term.trim()) { list.innerHTML = ''; this.status(''); return; }
+      const res = await pf.debouncedSearch(term);
+      if (res === null) return; // superseded by a newer keystroke
+      const items = await Promise.all(res.results.slice(0, 10).map((r: any) => r.data()));
+      this.status(items.length ? '' : this.dataset.noResults ?? '');
+      list.innerHTML = '';
+      for (const item of items) {
+        const li = document.createElement('li');
+        li.className = 'border-b border-black/10 py-3 last:border-0';
+        const a = document.createElement('a');
+        // Pagefind returns file paths; show the page URLs the site really uses (/about/ or /about).
+        a.href = item.url.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+        a.className = 'font-semibold hover:underline';
+        a.textContent = item.meta?.title ?? item.url;
+        const p = document.createElement('p');
+        p.className = 'mt-1 text-sm opacity-80';
+        p.innerHTML = item.excerpt; // Pagefind's excerpt: escaped text with <mark> highlights
+        li.append(a, p);
+        list.append(li);
+      }
+    }
+  }
+  customElements.define('site-search', SiteSearch);
+</script>

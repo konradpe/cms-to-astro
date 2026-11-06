@@ -1,0 +1,32 @@
+---
+/**
+ * news-list (an extra block of this recipe; replaces AstroWind's BlogLatestPosts): the latest entries
+ * of a kit collection in the page's language as cards (date and excerpt/description; featuredImage
+ * as the card image). Fields: heading?, limit? (default 6), collection? (default news).
+ */
+import Cards from './Cards.astro';
+import { getEntries, hrefOf, localeOf, titleOf } from '../../content';
+import { htmlLang } from '../../urls';
+
+interface Props {
+  heading?: string;
+  limit?: number;
+  collection?: string;
+  locale: string;
+}
+
+const { heading, limit = 6, collection = 'news', locale } = Astro.props;
+const date = new Intl.DateTimeFormat(htmlLang(locale), { dateStyle: 'long' });
+const entries = (await getEntries())
+  .filter((e) => e.collection === collection && localeOf(e) === locale && !e.data.noindex)
+  .sort((a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0))
+  .slice(0, limit);
+const items = entries.map((e) => ({
+  title: titleOf(e),
+  text: [e.data.date && date.format(e.data.date), e.data.excerpt ?? e.data.description].filter(Boolean).join(' · '),
+  image: e.data.featuredImage,
+  href: hrefOf(e),
+}));
+---
+
+{items.length > 0 && <Cards heading={heading} items={items} locale={locale} />}

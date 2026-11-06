@@ -1,0 +1,63 @@
+---
+/**
+ * Draft layout for entries with `wireframe: true`: the site frame (Shell), the content unstyled and a
+ * visible note with a link to the old page. `data-migration="wireframe"` lets plan.mjs see the status;
+ * `data-old-site` keeps pending-pages from making that link relative. Delete at go-live (with the
+ * `wireframe` branch in EntryView) or give it a final look if some pages stay simple.
+ */
+import { Shell } from './theme';
+import type { PageMeta } from './meta';
+import { t } from './strings';
+
+interface Props {
+  meta: PageMeta;
+  /** Visible <h1>; false when the content brings its own. */
+  heading: string | false;
+  oldUrl?: string;
+}
+
+const { meta, heading, oldUrl } = Astro.props;
+const s = t(meta.locale);
+---
+
+<Shell meta={meta}>
+  <div data-migration="wireframe" class="kit-wireframe">
+    <p data-pagefind-ignore class="note">
+      {s.wireframeNote}
+      {
+        oldUrl && (
+          <>
+            {' '}
+            {s.wireframeOld}{' '}
+            <a href={oldUrl} data-old-site target="_blank" rel="noopener">
+              {s.wireframeOldLink}
+            </a>
+          </>
+        )
+      }
+    </p>
+    {heading && <h1>{heading}</h1>}
+    <slot />
+    <slot name="after" />
+  </div>
+</Shell>
+
+<style>
+  .kit-wireframe {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding-block: 1rem 2rem;
+  }
+  .note {
+    margin: 0 0 2rem;
+    padding: 0.75rem 1rem;
+    border: 1px dashed currentColor;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    opacity: 0.75;
+  }
+  .kit-wireframe :global(img) {
+    max-width: 100%;
+    height: auto;
+  }
+</style>

@@ -1,0 +1,17 @@
+---
+/** text → an AstroWind-style section (heading + the theme's prose). Fields: heading?, text. */
+import Section from '../Section.astro';
+import { markdown } from '../../markdown';
+import { PROSE } from '../aw';
+
+interface Props {
+  heading?: string;
+  text?: string;
+}
+
+const { heading, text } = Astro.props;
+---
+
+<Section heading={heading}>
+  <div class={PROSE} set:html={markdown(text)} />
+</Section>

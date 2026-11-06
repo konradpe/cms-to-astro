@@ -1,0 +1,21 @@
+---
+/**
+ * text block in the theme's section style: heading like the theme's section titles, body with the
+ * theme's prose (Tailwind Typography, as on its blog posts). Fields: { heading?, text } (Markdown).
+ */
+import { markdown } from '../../markdown';
+
+interface Props {
+  heading?: string;
+  text?: string;
+}
+
+const { heading, text } = Astro.props;
+---
+
+<section class="mx-auto max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 2xl:max-w-full">
+  <div class="max-w-3xl">
+    {heading && <h2 class="mb-4 text-2xl font-bold tracking-tight text-balance text-neutral-800 md:text-4xl md:leading-tight">{heading}</h2>}
+    <div class="prose prose-lg prose-neutral max-w-none text-pretty" set:html={markdown(text)} />
+  </div>
+</section>

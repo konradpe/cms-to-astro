@@ -1,0 +1,96 @@
+---
+/**
+ * Site footer in the theme's layout: logo and address, link columns, then a
+ * bottom row with copyright, legal links and social links. Everything comes
+ * from src/data_files/navigation.ts; the year is set at build time.
+ */
+import BrandLogo from '@components/BrandLogo.astro';
+import FooterSocialLink from '@components/ui/links/FooterSocialLink.astro';
+import FacebookIcon from '@/assets/icons/facebook.svg';
+import InstagramIcon from '@/assets/icons/instagram.svg';
+import LinkedinIcon from '@/assets/icons/linkedin.svg';
+import XIcon from '@/assets/icons/x.svg';
+import YoutubeIcon from '@/assets/icons/youtube.svg';
+import { navigationFor } from '@data/navigation';
+import type { PageMeta } from '../../../migration/meta';
+import { site } from '../../../migration/site.config';
+
+interface Props {
+  meta: PageMeta;
+}
+
+const { meta } = Astro.props;
+const nav = navigationFor(meta.locale);
+const icons = { facebook: FacebookIcon, instagram: InstagramIcon, linkedin: LinkedinIcon, x: XIcon, youtube: YoutubeIcon };
+const year = new Date().getFullYear();
+const linkClass =
+  'inline-flex gap-x-2 rounded-lg text-neutral-600 ring-zinc-500 outline-hidden transition duration-300 hover:text-neutral-800 focus-visible:ring-3';
+---
+
+<footer class="w-full bg-neutral-300">
+  <div class="mx-auto w-full max-w-[85rem] px-4 py-10 sm:px-6 lg:px-16 lg:pt-20 2xl:max-w-(--breakpoint-2xl)">
+    <div class="grid grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-5">
+      <div class="col-span-full lg:col-span-2">
+        <BrandLogo class="h-9 w-auto" />
+        {nav.address && <p class="mt-4 text-sm whitespace-pre-line text-neutral-700">{nav.address}</p>}
+      </div>
+      {
+        nav.footer.map((column) => (
+          <nav class="col-span-1" aria-label={column.title}>
+            <h2 class="font-bold text-neutral-800">{column.title}</h2>
+            <ul class="mt-3 grid space-y-3">
+              {column.links.map((link) => (
+                <li>
+                  <a href={link.href} class={linkClass}>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+    </div>
+
+    <div class="mt-9 grid gap-y-3 sm:mt-12 sm:flex sm:items-center sm:justify-between sm:gap-x-6 sm:gap-y-0">
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-neutral-600">
+        <p>© {year} {site.name}</p>
+        {
+          nav.legal.length > 0 && (
+            <ul class="flex flex-wrap gap-x-4 gap-y-2">
+              {nav.legal.map((link) => (
+                <li>
+                  <a href={link.href} class={`${linkClass} underline-offset-2 hover:underline`}>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+      {
+        nav.social.length > 0 && (
+          <ul class="flex flex-wrap items-center gap-x-1" aria-label={nav.ui.social}>
+            {nav.social.map((link) => {
+              const Icon = link.icon ? icons[link.icon] : undefined;
+              return (
+                <li>
+                  {Icon ? (
+                    <FooterSocialLink url={link.href} label={link.label}>
+                      <Icon class="size-4 shrink-0 text-neutral-700" aria-hidden="true" />
+                    </FooterSocialLink>
+                  ) : (
+                    <a href={link.href} class={`${linkClass} text-sm`} target="_blank" rel="noopener noreferrer">
+                      {link.label}
+                    </a>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )
+      }
+    </div>
+  </div>
+</footer>

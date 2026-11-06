@@ -1,0 +1,97 @@
+---
+/**
+ * video: { url, title?, poster? }. url: a YouTube or Vimeo link (watch, share or embed form).
+ * Click-to-load facade: before the click the page holds only a button, the optional local poster
+ * image and a plain link; the player (youtube-nocookie / Vimeo dnt) loads on click (VideoFacade).
+ * Use a downloaded poster (/media/…), never the provider's thumbnail URL: that would be a request.
+ */
+import VideoFacade from '../VideoFacade.astro';
+import { t } from '../strings';
+
+interface Props {
+  url: string;
+  title?: string;
+  poster?: string;
+  locale?: string;
+}
+
+const { url, title = 'Video', poster, locale = 'en' } = Astro.props;
+const s = t(locale);
+
+function embedOf(link: string): { provider: string; embed: string } | undefined {
+  const yt = link.match(/(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/);
+  if (yt) return { provider: 'YouTube', embed: `https://www.youtube-nocookie.com/embed/${yt[1]}` };
+  const vimeo = link.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeo) return { provider: 'Vimeo', embed: `https://player.vimeo.com/video/${vimeo[1]}?dnt=1` };
+  return undefined;
+}
+
+const video = embedOf(url ?? '');
+if (!video) console.warn(`[migration] video block: unsupported URL ${url}`);
+---
+
+{
+  video ? (
+    <figure class="kit-video">
+      <div data-kit-video={video.embed} data-kit-video-title={title}>
+        <button type="button">
+          {poster && <img src={poster} alt="" loading="lazy" decoding="async" />}
+          <span>{s.videoLoad(video.provider)}</span>
+        </button>
+      </div>
+      <figcaption>
+        {title !== 'Video' && <>{title} · </>}
+        <a href={url} target="_blank" rel="noopener">
+          {s.videoOpen(video.provider)}
+        </a>
+      </figcaption>
+    </figure>
+  ) : (
+    <p class="kit-video">
+      <a href={url}>{title}</a>
+    </p>
+  )
+}
+<VideoFacade />
+
+<style>
+  .kit-video {
+    margin: 0 0 2.5rem;
+  }
+  button {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    padding: 0;
+    border: 0;
+    border-radius: var(--kit-radius, 0.5rem);
+    background: #1f2329;
+    color: #fff;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.6;
+  }
+  span {
+    position: relative;
+    max-width: 30rem;
+    padding: 0.75rem 1rem;
+    background: rgb(0 0 0 / 0.6);
+    border-radius: var(--kit-radius, 0.5rem);
+  }
+  span::before {
+    content: '▶ ';
+  }
+  figcaption {
+    font-size: 0.875rem;
+    color: var(--kit-muted, #5b6270);
+  }
+</style>

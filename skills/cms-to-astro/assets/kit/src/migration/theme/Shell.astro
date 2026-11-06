@@ -1,0 +1,130 @@
+---
+/**
+ * Default frame for kit pages when no theme is plugged in (integration point 1, see index.ts).
+ * A theme recipe replaces it with a wrapper around the theme's own layout. Whatever wraps the page
+ * must: put `lang={meta.lang}` on <html>, render <Meta meta={meta} /> in <head> (and drop the
+ * theme's duplicates of those tags), and render the default slot inside <main>.
+ */
+import Meta from '../Meta.astro';
+import type { PageMeta } from '../meta';
+import { site } from '../site.config';
+import { t } from '../strings';
+import { homeOf } from '../urls';
+
+interface Props {
+  meta: PageMeta;
+}
+
+const { meta } = Astro.props;
+const s = t(meta.locale);
+---
+
+<!doctype html>
+<html lang={meta.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <Meta meta={meta} />
+  </head>
+  <body>
+    <a class="kit-skip" href="#main">{s.skipToContent}</a>
+    <header class="kit-header">
+      <a class="kit-brand" href={homeOf(meta.locale)}>{site.name}</a>
+      {
+        meta.languages.length > 1 && (
+          <nav aria-label={s.languages}>
+            <ul>
+              {meta.languages.map((l) => (
+                <li>
+                  <a href={l.href} hreflang={l.lang} lang={l.lang} aria-current={l.current ? 'page' : undefined}>
+                    {l.locale.toUpperCase()}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+    </header>
+    <main id="main" data-pagefind-body>
+      <slot />
+    </main>
+    <footer class="kit-footer">
+      <p>{site.name}</p>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  /* Only for the theme-free default: system fonts, readable width, nothing that leaks into a theme. */
+  :root {
+    --kit-max: 72rem;
+    --kit-gap: 1.5rem;
+    --kit-muted: #5b6270;
+    --kit-line: #d9dce1;
+    --kit-accent: #1d4ed8;
+    --kit-radius: 0.5rem;
+  }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    color: #1f2329;
+    background: #fff;
+  }
+  main {
+    max-width: var(--kit-max);
+    margin: 0 auto;
+    padding: var(--kit-gap);
+  }
+  a {
+    color: var(--kit-accent);
+  }
+</style>
+
+<style>
+  .kit-skip {
+    position: absolute;
+    left: -999rem;
+  }
+  .kit-skip:focus {
+    left: 1rem;
+    top: 1rem;
+    background: #fff;
+    padding: 0.5rem 1rem;
+  }
+  .kit-header,
+  .kit-footer {
+    max-width: var(--kit-max);
+    margin: 0 auto;
+    padding: 1rem var(--kit-gap);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  .kit-header {
+    border-bottom: 1px solid var(--kit-line);
+  }
+  .kit-footer {
+    border-top: 1px solid var(--kit-line);
+    color: var(--kit-muted);
+  }
+  .kit-brand {
+    font-weight: 700;
+    text-decoration: none;
+    color: inherit;
+  }
+  nav ul {
+    display: flex;
+    gap: 0.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  nav a[aria-current] {
+    font-weight: 700;
+    text-decoration: none;
+    color: inherit;
+  }
+</style>
