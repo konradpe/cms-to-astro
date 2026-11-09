@@ -13,9 +13,12 @@ Written for non-developers. The agent explains each stage, recommends a choice, 
 In Claude Code:
 
 ```
+/plugin marketplace add anthropics/claude-plugins-official
 /plugin marketplace add konradpe/cms-to-astro
 /plugin install cms-to-astro@cms-to-astro
 ```
+
+The first line adds Anthropic's official marketplace, which supplies the required `frontend-design` plugin. It is harmless if that marketplace is already there. Without it, the plugin installs but does not load.
 
 ## Use
 
